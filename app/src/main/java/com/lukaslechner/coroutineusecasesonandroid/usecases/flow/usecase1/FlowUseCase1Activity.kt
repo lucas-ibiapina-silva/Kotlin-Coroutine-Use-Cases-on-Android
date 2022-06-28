@@ -10,6 +10,7 @@ import com.lukaslechner.coroutineusecasesonandroid.R
 import com.lukaslechner.coroutineusecasesonandroid.base.BaseActivity
 import com.lukaslechner.coroutineusecasesonandroid.base.flowUseCase1Description
 import com.lukaslechner.coroutineusecasesonandroid.databinding.ActivityFlowUsecase1Binding
+import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.GoogleStock
 
 class FlowUseCase1Activity : BaseActivity() {
 
@@ -23,8 +24,7 @@ class FlowUseCase1Activity : BaseActivity() {
 
         initChart()
 
-        viewModel.whileTrueInCoroutine()
-        viewModel.currentGoogleStockPrice.observe(this) { uiState ->
+        viewModel.currentGoogleStockPriceAsLiveData.observe(this) { uiState ->
             if (uiState != null) {
                 render(uiState)
             }
@@ -36,10 +36,7 @@ class FlowUseCase1Activity : BaseActivity() {
         entries.add(Entry(0f, 2000f))
 
         val data = LineDataSet(entries, "Google Stock Price")
-
-        val colorPrimary = ContextCompat.getColor(this, R.color.colorPrimary)
-        data.color = colorPrimary
-        data.setCircleColor(colorPrimary)
+        data.style()
 
         val lineData = LineData(data)
 
@@ -56,20 +53,28 @@ class FlowUseCase1Activity : BaseActivity() {
         }
     }
 
+    private fun LineDataSet.style() {
+        val colorPrimary = ContextCompat.getColor(this@FlowUseCase1Activity, R.color.colorPrimary)
+        color = colorPrimary
+        setCircleColor(colorPrimary)
+        lineWidth = 2.5f
+        circleRadius = 1f
+    }
+
     private fun render(uiState: UiState) {
         when (uiState) {
             is UiState.Success -> {
-                addNewChartEntry(uiState)
+                updateChart(uiState.googleStock)
             }
         }
     }
 
-    private fun addNewChartEntry(uiState: UiState.Success) {
+    private fun updateChart(stock: GoogleStock) {
         val currentLineData = binding.googleStockChart.data
         currentLineData.addEntry(
             Entry(
                 currentLineData.entryCount.toFloat(),
-                uiState.googleStock.currentPriceUsd
+                stock.currentPriceUsd
             ), 0
         )
         binding.googleStockChart.data = currentLineData

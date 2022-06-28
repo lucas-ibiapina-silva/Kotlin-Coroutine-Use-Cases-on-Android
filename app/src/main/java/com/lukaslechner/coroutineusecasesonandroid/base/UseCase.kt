@@ -25,6 +25,7 @@ import com.lukaslechner.coroutineusecasesonandroid.usecases.coroutines.usecase7.
 import com.lukaslechner.coroutineusecasesonandroid.usecases.coroutines.usecase8.RoomAndCoroutinesActivity
 import com.lukaslechner.coroutineusecasesonandroid.usecases.coroutines.usecase9.DebuggingCoroutinesActivity
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase1.FlowUseCase1Activity
+import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase3.FlowUseCase3Activity
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -60,7 +61,9 @@ const val useCase16Description =
 const val useCase17Description =
     "#17 Perform heavy calculation on Main Thread without freezing the UI"
 
-const val flowUseCase1Description = "#1 Read from database that exposes Flow, ViewModel exposes LiveData"
+const val flowUseCase1Description = "#1 Consume Flow - ViewModel exposes LiveData"
+const val flowUseCase2Description = "#2 Consume Flow - ViewModel exposes Flow"
+const val flowUseCase3Description = "#3 Read from database that exposes Flow"
 
 private val coroutinesUseCases =
     UseCaseCategory(
@@ -168,6 +171,10 @@ private val flowUseCases =
             UseCase(
                 flowUseCase1Description,
                 FlowUseCase1Activity::class.java
+            ),
+            UseCase(
+                flowUseCase3Description,
+                FlowUseCase3Activity::class.java
             )
         )
     )
