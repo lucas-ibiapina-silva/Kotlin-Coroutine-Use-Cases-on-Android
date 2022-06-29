@@ -8,7 +8,7 @@ import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase3.databa
 class ViewModelFactory(private val api: FlowMockApi, private val database: StockDao) :
     ViewModelProvider.Factory {
 
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return modelClass.getConstructor(FlowMockApi::class.java, StockDao::class.java)
             .newInstance(api, database)
     }
