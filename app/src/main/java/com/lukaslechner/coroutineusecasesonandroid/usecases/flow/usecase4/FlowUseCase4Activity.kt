@@ -1,4 +1,4 @@
-package com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase3
+package com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase4
 
 import android.os.Bundle
 import androidx.activity.viewModels
@@ -11,22 +11,15 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.lukaslechner.coroutineusecasesonandroid.R
 import com.lukaslechner.coroutineusecasesonandroid.base.BaseActivity
-import com.lukaslechner.coroutineusecasesonandroid.base.flowUseCase3Description
+import com.lukaslechner.coroutineusecasesonandroid.base.flowUseCase4Description
 import com.lukaslechner.coroutineusecasesonandroid.databinding.ActivityFlowUsecase1Binding
-import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.GoogleStock
-import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase3.database.StockDatabase
 import kotlinx.coroutines.launch
 
-class FlowUseCase3Activity : BaseActivity() {
+class FlowUseCase4Activity : BaseActivity() {
 
     private val binding by lazy { ActivityFlowUsecase1Binding.inflate(layoutInflater) }
 
-    private val viewModel: FlowUseCase3ViewModel by viewModels {
-        ViewModelFactory(
-            mockApi(),
-            StockDatabase.getInstance(applicationContext).stockDao()
-        )
-    }
+    private val viewModel: FlowUseCase4ViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,22 +27,29 @@ class FlowUseCase3Activity : BaseActivity() {
 
         initChart()
 
-        viewModel.startStockPricePolling()
-
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.currentGoogleStockPrice.collect { uiState ->
+                viewModel.combinedStateFlow.collect { uiState ->
                     render(uiState)
                 }
             }
         }
+
+        // OR
+        /* lifecycleScope.launch {
+            viewModel.currentGoogleStockPriceAsFlow
+                .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
+                .collect{ uiState ->
+                    render(uiState)
+                }
+        }*/
     }
 
     private fun initChart() {
         val entries: ArrayList<Entry> = ArrayList()
-        entries.add(Entry(0f, 2000f))
+        entries.add(Entry(0f, 2200f))
 
-        val data = LineDataSet(entries, "Google Stock Price")
+        val data = LineDataSet(entries, "Google Stock Price in Euro")
         data.style()
 
         val lineData = LineData(data)
@@ -62,13 +62,13 @@ class FlowUseCase3Activity : BaseActivity() {
         }
 
         binding.googleStockChart.axisLeft.apply {
-            axisMinimum = 1990f
-            axisMaximum = 2100f
+            axisMinimum = 2100f
+            axisMaximum = 2400f
         }
     }
 
     private fun LineDataSet.style() {
-        val colorPrimary = ContextCompat.getColor(this@FlowUseCase3Activity, R.color.colorPrimary)
+        val colorPrimary = ContextCompat.getColor(this@FlowUseCase4Activity, R.color.colorPrimary)
         color = colorPrimary
         setCircleColor(colorPrimary)
         lineWidth = 2.5f
@@ -78,32 +78,22 @@ class FlowUseCase3Activity : BaseActivity() {
     private fun render(uiState: UiState) {
         when (uiState) {
             is UiState.Success -> {
-                updateChart(uiState.googleStockList)
+                updateChart(uiState.stockPriceInEuro)
             }
         }
     }
 
-    private fun updateChart(stockList: List<GoogleStock>) {
-
-        val entries: ArrayList<Entry> = ArrayList()
-
-        // initial data point
-        entries.add(Entry(0f, 2000f))
-        stockList.forEachIndexed { index, googleStock ->
-            entries.add(
-                Entry((index + 1).toFloat(), googleStock.currentPriceUsd)
-            )
-        }
-
-
-        val data = LineDataSet(entries, "Google Stock Price").apply {
-            style()
-        }
-
-        val lineData = LineData(data)
-        binding.googleStockChart.data = lineData
+    private fun updateChart(stockPriceInEuro: Float) {
+        val currentLineData = binding.googleStockChart.data
+        currentLineData.addEntry(
+            Entry(
+                currentLineData.entryCount.toFloat(),
+                stockPriceInEuro
+            ), 0
+        )
+        binding.googleStockChart.data = currentLineData
         binding.googleStockChart.invalidate()
     }
 
-    override fun getToolbarTitle() = flowUseCase3Description
+    override fun getToolbarTitle() = flowUseCase4Description
 }

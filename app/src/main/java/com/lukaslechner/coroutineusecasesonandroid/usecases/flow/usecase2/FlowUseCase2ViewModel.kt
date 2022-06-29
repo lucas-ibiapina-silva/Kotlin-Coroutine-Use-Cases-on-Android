@@ -13,7 +13,7 @@ class FlowUseCase2ViewModel(
         .map { stockList ->
             UiState.Success(stockList)
         }.onEach {
-            Timber.d("New value collected when using .asLiveData()")
+            Timber.d("New value collected")
         }.stateIn(
             initialValue = UiState.Loading,
             scope = viewModelScope,

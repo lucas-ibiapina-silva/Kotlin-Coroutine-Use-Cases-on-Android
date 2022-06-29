@@ -27,6 +27,7 @@ import com.lukaslechner.coroutineusecasesonandroid.usecases.coroutines.usecase9.
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase1.FlowUseCase1Activity
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase2.FlowUseCase2Activity
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase3.FlowUseCase3Activity
+import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase4.FlowUseCase4Activity
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -65,6 +66,7 @@ const val useCase17Description =
 const val flowUseCase1Description = "#1 Consume Flow - ViewModel exposes LiveData"
 const val flowUseCase2Description = "#2 Consume Flow - ViewModel exposes Flow"
 const val flowUseCase3Description = "#3 Read from database that exposes Flow"
+const val flowUseCase4Description = "#4 Composing Flows with combine"
 
 private val coroutinesUseCases =
     UseCaseCategory(
@@ -180,6 +182,10 @@ private val flowUseCases =
             UseCase(
                 flowUseCase3Description,
                 FlowUseCase3Activity::class.java
+            ),
+            UseCase(
+                flowUseCase4Description,
+                FlowUseCase4Activity::class.java
             )
         )
     )

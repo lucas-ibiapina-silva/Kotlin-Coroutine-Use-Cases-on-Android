@@ -15,6 +15,6 @@ class FlowUseCase1ViewModel(
         .map { stockList ->
             UiState.Success(stockList)
         }.onEach {
-            Timber.d("New value collected when using .asLiveData()")
+            Timber.d("New value collected")
         }.asLiveData()
 }

@@ -10,6 +10,9 @@ interface FlowMockApi {
 
     @GET("current-google-stock-price")
     suspend fun getCurrentGoogleStockPrice(): GoogleStock
+
+    @GET("current-currency-rate")
+    suspend fun getCurrentCurrencyRate(): CurrencyRate
 }
 
 fun createFlowMockApi(interceptor: MockNetworkInterceptor): FlowMockApi {
