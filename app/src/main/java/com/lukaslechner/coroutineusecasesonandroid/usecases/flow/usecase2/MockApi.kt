@@ -12,6 +12,6 @@ fun mockApi() =
                 path = "http://localhost/current-alphabet-stock-price",
                 body = { Gson().toJson(fakeCurrentAlphabetStockPrice()) },
                 status = 200,
-                delayInMs = 100,
+                delayInMs = 2000,
             )
     )
