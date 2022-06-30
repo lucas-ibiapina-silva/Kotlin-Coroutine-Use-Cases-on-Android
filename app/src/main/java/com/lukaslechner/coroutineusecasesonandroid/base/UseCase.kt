@@ -24,6 +24,7 @@ import com.lukaslechner.coroutineusecasesonandroid.usecases.coroutines.usecase7.
 import com.lukaslechner.coroutineusecasesonandroid.usecases.coroutines.usecase7.rx.TimeoutAndRetryRxActivity
 import com.lukaslechner.coroutineusecasesonandroid.usecases.coroutines.usecase8.RoomAndCoroutinesActivity
 import com.lukaslechner.coroutineusecasesonandroid.usecases.coroutines.usecase9.DebuggingCoroutinesActivity
+import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.useCaseCallbackFlow.FlowUseCase5Activity
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.useCaseViewModelWithChannels.FlowUseCase4ActivityChannels
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase1.FlowUseCase1Activity
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase2.FlowUseCase2Activity
@@ -216,6 +217,10 @@ private val flowUseCases =
             UseCase(
                 flowUseCase4Description,
                 FlowUseCase4ActivityChannels::class.java
+            ),
+            UseCase(
+                flowUseCase5Description,
+                FlowUseCase5Activity::class.java
             )
         )
     )

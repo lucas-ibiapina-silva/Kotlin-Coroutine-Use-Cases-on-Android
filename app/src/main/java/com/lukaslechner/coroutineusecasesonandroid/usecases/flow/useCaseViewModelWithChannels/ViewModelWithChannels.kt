@@ -62,6 +62,11 @@ class ViewModelWithChannels(
             started = SharingStarted.WhileSubscribed(5000)
         )
 
+    override fun onCleared() {
+        connectivityManager.unregisterNetworkCallback( networkStatusCallback)
+        super.onCleared()
+    }
+
     sealed class NetworkState {
         object Available : NetworkState()
         object Unavailable : NetworkState()

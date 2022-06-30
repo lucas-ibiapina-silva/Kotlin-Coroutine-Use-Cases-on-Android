@@ -119,6 +119,10 @@
             android:name=".usecases.flow.useCaseViewModelWithChannels.FlowUseCase4ActivityChannels"
             android:exported="true" />
 
+        <activity
+            android:name=".usecases.flow.useCaseCallbackFlow.FlowUseCase5Activity"
+            android:exported="true" />
+
     </application>
 
 </manifest>
