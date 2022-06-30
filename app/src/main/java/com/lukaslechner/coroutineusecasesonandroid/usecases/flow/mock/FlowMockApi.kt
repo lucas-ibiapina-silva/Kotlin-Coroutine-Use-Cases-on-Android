@@ -8,8 +8,8 @@ import retrofit2.http.GET
 
 interface FlowMockApi {
 
-    @GET("current-google-stock-price")
-    suspend fun getCurrentGoogleStockPrice(): GoogleStock
+    @GET("current-alphabet-stock-price")
+    suspend fun getCurrentAlphabetStockPrice(): Stock
 
     @GET("current-currency-rate")
     suspend fun getCurrentCurrencyRate(): CurrencyRate

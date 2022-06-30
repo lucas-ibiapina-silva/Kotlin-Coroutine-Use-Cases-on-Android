@@ -2,17 +2,19 @@ package com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock
 
 import kotlin.random.Random
 
-data class GoogleStock(val currentPriceUsd: Float)
+data class Stock(val companyName: String = "alphabet", val currentPriceUsd: Float)
 
 data class CurrencyRate(val usdInEuro: Float)
 
-fun fakeCurrentGoogleStockPrice(): GoogleStock {
-    val initialPrice = 2_000f
-    val increase = Random.nextInt(100)
-    val currentPrice = initialPrice + increase
-    return GoogleStock(currentPrice)
+// return random alphabet stock prices between 2000 and 2100 usd
+var currentStockPriceUsd = 2_000f
+fun fakeCurrentAlphabetStockPrice(): Stock {
+    val randomIncreaseOrDecrease = Random.nextInt(-10, 10)
+    currentStockPriceUsd += randomIncreaseOrDecrease
+    return Stock(currentPriceUsd = currentStockPriceUsd)
 }
 
+// return usd-euro currency rates between 1.05 and 1.10 (usd in euro)
 fun fakeCurrentCurrencyRate(): CurrencyRate {
     val initial = 1.05f
     val increase = Random.nextDouble(0.0, 0.05).toFloat()

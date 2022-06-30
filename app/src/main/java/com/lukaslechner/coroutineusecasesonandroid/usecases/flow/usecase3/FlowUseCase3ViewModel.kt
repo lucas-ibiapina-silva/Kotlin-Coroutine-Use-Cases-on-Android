@@ -32,7 +32,7 @@ class FlowUseCase3ViewModel(
         viewModelScope.launch {
             database.clear()
             while (true) {
-                val currentGoogleStockPrice = mockApi.getCurrentGoogleStockPrice()
+                val currentGoogleStockPrice = mockApi.getCurrentAlphabetStockPrice()
                 Timber.d("Fetched new stock price: ${currentGoogleStockPrice.currentPriceUsd}$")
                 database.insert(currentGoogleStockPrice.mapToEntity())
                 delay(2000)

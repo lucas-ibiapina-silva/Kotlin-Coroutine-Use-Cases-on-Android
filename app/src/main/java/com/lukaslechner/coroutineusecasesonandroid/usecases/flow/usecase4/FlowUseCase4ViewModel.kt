@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.*
 import timber.log.Timber
 
 class FlowUseCase4ViewModel(
-    private val stockPriceDataSource: GoogleStockPriceDataSource = GoogleStockPriceDataSource(),
+    private val stockPriceDataSource: StockPriceDataSource = StockPriceDataSource(),
     private val currencyRateDataSource: CurrencyRateDataSource = CurrencyRateDataSource()
 ) : BaseViewModel<UiState>() {
 
