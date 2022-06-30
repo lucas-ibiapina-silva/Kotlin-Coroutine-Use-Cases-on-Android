@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.*
 import timber.log.Timber
 
 class FlowUseCase3ViewModel(
-    dataSource: StockPriceDataSource = StockPriceDataSource()
+    dataSource: StockPriceDataSource = NetworkStockPriceDataSource()
 ) : BaseViewModel<UiState>() {
 
     val currentStockPriceAsFlow: StateFlow<UiState> = dataSource.latestPrice

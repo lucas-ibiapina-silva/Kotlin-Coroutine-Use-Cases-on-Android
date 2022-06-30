@@ -9,11 +9,11 @@ import kotlinx.coroutines.flow.onStart
 import timber.log.Timber
 
 class FlowUseCase1ViewModel(
-    dataSource: StockPriceDataSource = StockPriceDataSource()
+    dataSource: StockPriceDataSource = NetworkStockPriceDataSource()
 ) : BaseViewModel<UiState>() {
 
     val currentStockPriceAsLiveData: LiveData<UiState> = dataSource.latestPrice
-        .map{ stock ->
+        .map { stock ->
             UiState.Success(stock) as UiState
         }.onEach {
             Timber.d("New value collected")

@@ -6,12 +6,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class StockPriceDataSource(
+interface StockPriceDataSource {
+    val latestPrice: Flow<Stock>
+}
+
+class NetworkStockPriceDataSource(
     private val mockApi: FlowMockApi = mockApi(),
     private val refreshIntervalMs: Long = 3000
-) {
+): StockPriceDataSource {
 
-    val latestPrice: Flow<Stock> = flow {
+    override val latestPrice: Flow<Stock> = flow {
         while (true) {
             val currentStockPrice = mockApi.getCurrentAlphabetStockPrice()
             emit(currentStockPrice)
