@@ -66,7 +66,32 @@ const val useCase17Description =
 const val flowUseCase1Description = "#1 Consume Flow - ViewModel exposes LiveData"
 const val flowUseCase2Description = "#2 Consume Flow - ViewModel exposes Flow"
 const val flowUseCase3Description = "#3 Read from database that exposes Flow"
-const val flowUseCase4Description = "#4 Composing Flows with combine"
+
+// add network status callback - show toast when no network
+const val flowUseCase4Description = "#4 Exposing Single Events in the ViewModel with Channels"
+
+// convert network status callback to flow with callbackFlow
+const val flowUseCase5Description = "#5 Converting callback APIs to Flows"
+
+// get data from 2 exchanges, take average, use zip, combine and combineTransform
+const val flowUseCase6Description = "#4 Composing Flows with zip, combine and combineTransform"
+
+// create flow from user input (usd/eur switch), use additional datasource for currency rate, add distinctUntilChanged
+const val flowUseCase7Description = "#5 Composing 3 Flows with additional EUR/Dollar Switch"
+
+// debounce - search stocks on single exchange
+
+// flattening - search stocks on several exchanges - one search term emission leads to multiple network requests
+
+// Flow Context - perform sorting and average calculation on background
+
+// buffering - what should happen when user performs quick searches while another search is currently in progress
+
+// add manual refresh button - make sure that request is not performed multiple times => Buffering?
+
+// Cancellation - make sure the calculation can be cancelled
+
+// Exception Handling - Flows return exception sometimes
 
 private val coroutinesUseCases =
     UseCaseCategory(

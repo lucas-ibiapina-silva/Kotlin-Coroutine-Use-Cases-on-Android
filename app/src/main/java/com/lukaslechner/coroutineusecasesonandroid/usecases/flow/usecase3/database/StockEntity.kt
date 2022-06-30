@@ -2,7 +2,7 @@ package com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase3.datab
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.GoogleStock
+import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.Stock
 
 @Entity(tableName = "stock")
 data class StockEntity(
@@ -12,10 +12,10 @@ data class StockEntity(
 )
 
 fun List<StockEntity>.mapToUiModelList() = map {
-    GoogleStock(it.priceUsd)
+    Stock(currentPriceUsd = it.priceUsd)
 }
 
-fun GoogleStock.mapToEntity() =
+fun Stock.mapToEntity() =
     StockEntity(
         time = System.currentTimeMillis(),
         priceUsd = currentPriceUsd
