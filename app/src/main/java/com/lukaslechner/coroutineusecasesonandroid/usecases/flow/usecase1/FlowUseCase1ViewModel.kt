@@ -12,6 +12,8 @@ class FlowUseCase1ViewModel(
     dataSource: StockPriceDataSource = NetworkStockPriceDataSource()
 ) : BaseViewModel<UiState>() {
 
+    //TODO: Problem: chart data lost on configuration change
+
     val currentStockPriceAsLiveData: LiveData<UiState> = dataSource.latestPrice
         .map { stock ->
             UiState.Success(stock) as UiState

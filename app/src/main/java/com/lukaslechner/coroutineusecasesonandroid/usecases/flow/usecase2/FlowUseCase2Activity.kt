@@ -36,8 +36,6 @@ class FlowUseCase2Activity : BaseActivity() {
 
         binding.chart.initChart(this)
 
-        viewModel.startStockPricePolling()
-
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.currentStockPrice.collect { uiState ->

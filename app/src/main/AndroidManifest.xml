@@ -115,6 +115,10 @@
             android:name=".usecases.flow.usecase4.FlowUseCase4Activity"
             android:exported="true" />
 
+        <activity
+            android:name=".usecases.flow.useCaseViewModelWithChannels.FlowUseCase4ActivityChannels"
+            android:exported="true" />
+
     </application>
 
 </manifest>

@@ -28,7 +28,7 @@ class FlowUseCase2ViewModel(
         started = SharingStarted.WhileSubscribed(5000)
     )
 
-    fun startStockPricePolling() {
+    init {
         viewModelScope.launch {
             database.clear()
             while (true) {
