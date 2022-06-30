@@ -23,7 +23,7 @@ class FlowUseCase1Activity : BaseActivity() {
 
         binding.chart.initChart(this)
 
-        viewModel.currentGoogleStockPriceAsLiveData.observe(this) { uiState ->
+        viewModel.currentStockPriceAsLiveData.observe(this) { uiState ->
             if (uiState != null) {
                 render(uiState)
             }

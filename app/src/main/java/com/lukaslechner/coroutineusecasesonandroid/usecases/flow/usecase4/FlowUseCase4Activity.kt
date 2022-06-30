@@ -36,7 +36,7 @@ class FlowUseCase4Activity : BaseActivity() {
 
         // OR
         /* lifecycleScope.launch {
-            viewModel.currentGoogleStockPriceAsFlow
+            viewModel.currentStockPriceAsFlow
                 .flowWithLifecycle(lifecycle, Lifecycle.State.STARTED)
                 .collect{ uiState ->
                     render(uiState)

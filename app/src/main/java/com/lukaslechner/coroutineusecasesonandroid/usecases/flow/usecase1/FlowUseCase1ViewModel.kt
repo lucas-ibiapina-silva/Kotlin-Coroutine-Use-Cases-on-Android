@@ -12,7 +12,7 @@ class FlowUseCase1ViewModel(
     dataSource: StockPriceDataSource = StockPriceDataSource()
 ) : BaseViewModel<UiState>() {
 
-    val currentGoogleStockPriceAsLiveData: LiveData<UiState> = dataSource.latestPrice
+    val currentStockPriceAsLiveData: LiveData<UiState> = dataSource.latestPrice
         .map{ stock ->
             UiState.Success(stock) as UiState
         }.onEach {

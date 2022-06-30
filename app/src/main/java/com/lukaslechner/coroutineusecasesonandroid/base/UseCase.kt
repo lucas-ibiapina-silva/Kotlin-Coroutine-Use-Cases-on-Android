@@ -64,8 +64,8 @@ const val useCase17Description =
     "#17 Perform heavy calculation on Main Thread without freezing the UI"
 
 const val flowUseCase1Description = "#1 Consume Flow - ViewModel exposes LiveData"
-const val flowUseCase2Description = "#2 Consume Flow - ViewModel exposes Flow"
-const val flowUseCase3Description = "#3 Read from database that exposes Flow"
+const val flowUseCase2Description = "#2 Consume Flow from Room database"
+const val flowUseCase3Description = "#3 Consume Flow - ViewModel exposes Flow"
 
 // add network status callback - show toast when no network
 const val flowUseCase4Description = "#4 Exposing Single Events in the ViewModel with Channels"

@@ -1,4 +1,4 @@
-package com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase3.database
+package com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase2.database
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -10,10 +10,10 @@ import kotlinx.coroutines.flow.Flow
 interface StockDao {
 
     @Query("SELECT * FROM stock")
-    suspend fun currentGoogleStockPrices(): List<StockEntity>
+    suspend fun currentAlphabetStockPrices(): List<StockEntity>
 
     @Query("SELECT * FROM stock ORDER BY time")
-    fun googleStockPrices(): Flow<List<StockEntity>>
+    fun stockPrices(): Flow<List<StockEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(stockEntity: StockEntity)

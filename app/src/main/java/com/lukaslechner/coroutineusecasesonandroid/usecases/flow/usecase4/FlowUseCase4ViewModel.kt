@@ -12,12 +12,12 @@ class FlowUseCase4ViewModel(
 ) : BaseViewModel<UiState>() {
 
 
-    private val currentGoogleStockPriceInEuroCombined: Flow<Float> =
-        stockPriceDataSource.latestPrice.combine(currencyRateDataSource.latestRate) { googleStock, currencyRate ->
-            googleStock.currentPriceUsd * currencyRate.usdInEuro
+    private val currentStockPriceInEuroCombined: Flow<Float> =
+        stockPriceDataSource.latestPrice.combine(currencyRateDataSource.latestRate) { stock, currencyRate ->
+            stock.currentPriceUsd * currencyRate.usdInEuro
         }
 
-    val combinedStateFlow = currentGoogleStockPriceInEuroCombined
+    val combinedStateFlow = currentStockPriceInEuroCombined
         .onEach { stockPriceInEuro ->
             Timber.d("Calculated stock price in euro: $stockPriceInEuro")
         }.map { stockPriceInEuro ->
@@ -28,12 +28,12 @@ class FlowUseCase4ViewModel(
             started = SharingStarted.WhileSubscribed(5000)
         )
 
-    private val currentGoogleStockPriceInEuroZipped: Flow<Float> =
-        stockPriceDataSource.latestPrice.zip(currencyRateDataSource.latestRate) { googleStock, currencyRate ->
-            googleStock.currentPriceUsd * currencyRate.usdInEuro
+    private val currentStockPriceInEuroZipped: Flow<Float> =
+        stockPriceDataSource.latestPrice.zip(currencyRateDataSource.latestRate) { stock, currencyRate ->
+            stock.currentPriceUsd * currencyRate.usdInEuro
         }
 
-    val zippedStateFlow = currentGoogleStockPriceInEuroCombined
+    val zippedStateFlow = currentStockPriceInEuroCombined
         .onEach { stockPriceInEuro ->
             Timber.d("Calculated stock price in euro: $stockPriceInEuro")
         }.map { stockPriceInEuro ->
@@ -45,13 +45,13 @@ class FlowUseCase4ViewModel(
         )
 
     val combineTransformStateFlow =
-        stockPriceDataSource.latestPrice.combineTransform(currencyRateDataSource.latestRate) { googleStock, currencyRate ->
+        stockPriceDataSource.latestPrice.combineTransform(currencyRateDataSource.latestRate) { stock, currencyRate ->
             emit(UiState.Loading)
 
             // simulate heavy calculation
             delay(2000)
 
-            val stockPriceInEuro = googleStock.currentPriceUsd * currencyRate.usdInEuro
+            val stockPriceInEuro = stock.currentPriceUsd * currencyRate.usdInEuro
             emit(UiState.Success(stockPriceInEuro))
         }.stateIn(
             initialValue = UiState.Loading,
