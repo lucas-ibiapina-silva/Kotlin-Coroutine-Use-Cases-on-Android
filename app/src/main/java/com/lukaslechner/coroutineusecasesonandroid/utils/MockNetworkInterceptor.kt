@@ -26,7 +26,7 @@ class MockNetworkInterceptor : Interceptor {
 
     private fun findMockResponseInList(request: Request): MockResponse? {
         return mockResponses.find { mockResponse ->
-            mockResponse.path == request.url().toString()
+            mockResponse.path.contains(request.url().encodedPath())
         }
     }
 
@@ -67,7 +67,7 @@ class MockNetworkInterceptor : Interceptor {
             .body(
                 ResponseBody.create(
                     MediaType.get("application/json"),
-                    mockResponse.body.invoke()
+                    mockResponse.body.invoke(request)
                 )
             )
             .build()
@@ -75,7 +75,7 @@ class MockNetworkInterceptor : Interceptor {
 
     fun mock(
         path: String,
-        body: () -> String,
+        body: (Request) -> String,
         status: Int,
         delayInMs: Long = 250,
         persist: Boolean = true
@@ -98,7 +98,7 @@ class MockNetworkInterceptor : Interceptor {
 
 data class MockResponse(
     val path: String,
-    val body: () -> String,
+    val body: (Request) -> String,
     val status: Int,
     val delayInMs: Long,
     val persist: Boolean

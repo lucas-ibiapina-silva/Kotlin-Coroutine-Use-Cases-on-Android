@@ -5,8 +5,8 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lukaslechner.coroutineusecasesonandroid.base.BaseViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import timber.log.Timber
@@ -14,7 +14,7 @@ import timber.log.Timber
 class ViewModelWithChannels(
     context: Context,
     dataSource: StockPriceDataSource = NetworkStockPriceDataSource()
-) : BaseViewModel<UiState>() {
+) : ViewModel() {
 
     val networkStateFlow = MutableStateFlow<NetworkState>(NetworkState.Available)
     val networkStateChannel = Channel<NetworkState>(Channel.CONFLATED)

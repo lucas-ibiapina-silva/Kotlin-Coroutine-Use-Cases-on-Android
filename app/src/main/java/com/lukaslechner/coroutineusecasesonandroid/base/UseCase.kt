@@ -30,6 +30,7 @@ import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase1.FlowUs
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase2.FlowUseCase2Activity
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase3.FlowUseCase3Activity
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase4.FlowUseCase4Activity
+import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce.DebounceActivity
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -82,6 +83,7 @@ const val flowUseCase6Description = "#4 Composing Flows with zip, combine and co
 const val flowUseCase7Description = "#5 Composing 3 Flows with additional EUR/Dollar Switch"
 
 // debounce - search stocks on single exchange
+const val flowUseCaseDebounce = "Debounce"
 
 // flattening - search stocks on several exchanges - one search term emission leads to multiple network requests
 
@@ -221,6 +223,10 @@ private val flowUseCases =
             UseCase(
                 flowUseCase5Description,
                 FlowUseCase5Activity::class.java
+            ),
+            UseCase(
+                flowUseCaseDebounce,
+                DebounceActivity::class.java
             )
         )
     )

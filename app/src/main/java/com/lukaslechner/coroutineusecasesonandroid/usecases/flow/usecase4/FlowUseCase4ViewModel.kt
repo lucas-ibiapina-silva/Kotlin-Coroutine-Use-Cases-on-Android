@@ -1,7 +1,7 @@
 package com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase4
 
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.lukaslechner.coroutineusecasesonandroid.base.BaseViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import timber.log.Timber
@@ -9,7 +9,7 @@ import timber.log.Timber
 class FlowUseCase4ViewModel(
     private val stockPriceDataSource: StockPriceDataSource = StockPriceDataSource(),
     private val currencyRateDataSource: CurrencyRateDataSource = CurrencyRateDataSource()
-) : BaseViewModel<UiState>() {
+) : ViewModel() {
 
 
     private val currentStockPriceInEuroCombined: Flow<Float> =
