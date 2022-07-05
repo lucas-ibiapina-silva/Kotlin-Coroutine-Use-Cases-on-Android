@@ -15,6 +15,9 @@ interface FlowMockApi {
     @GET("current-stock-prices")
     suspend fun getAllCurrentStockPrices(@Query("searchTerm") searchTerm: String): List<StockListing>
 
+    @GET("current-crypto-currency-prices")
+    suspend fun getCurrentCryptoCurrencyPrices(): List<CryptoCurrency>
+
     @GET("current-currency-rate")
     suspend fun getCurrentCurrencyRate(): CurrencyRate
 }

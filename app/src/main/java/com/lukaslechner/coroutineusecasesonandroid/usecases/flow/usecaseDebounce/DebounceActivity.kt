@@ -13,6 +13,7 @@ import com.lukaslechner.coroutineusecasesonandroid.R
 import com.lukaslechner.coroutineusecasesonandroid.base.BaseActivity
 import com.lukaslechner.coroutineusecasesonandroid.base.flowUseCase3Description
 import com.lukaslechner.coroutineusecasesonandroid.databinding.ActivityFlowDebounceBinding
+import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce.database.CryptoCurrencyDatabase
 import com.lukaslechner.coroutineusecasesonandroid.utils.setGone
 import com.lukaslechner.coroutineusecasesonandroid.utils.setVisible
 import kotlinx.coroutines.channels.awaitClose
@@ -23,7 +24,12 @@ class DebounceActivity : BaseActivity() {
 
     private val binding by lazy { ActivityFlowDebounceBinding.inflate(layoutInflater) }
 
-    private val viewModel: DebounceViewModel by viewModels()
+    private val viewModel: DebounceViewModel by viewModels {
+        ViewModelFactory(
+            api = mockApi(),
+            database = CryptoCurrencyDatabase.getInstance(applicationContext).cryptoCurrencyDao()
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,7 +58,7 @@ class DebounceActivity : BaseActivity() {
             }
         }
 
-        viewModel.setSearchInputFlow(searchInputFlow)
+        // viewModel.setSearchInputFlow(searchInputFlow)
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -71,7 +77,7 @@ class DebounceActivity : BaseActivity() {
             }
             is UiState.Success -> {
                 binding.recyclerView.setVisible()
-                binding.recyclerView.adapter = StockAdapter(uiState.stockList)
+                binding.recyclerView.adapter = CryptoCurrencyAdapter(uiState.stockList)
                 binding.progressBar.setGone()
             }
         }

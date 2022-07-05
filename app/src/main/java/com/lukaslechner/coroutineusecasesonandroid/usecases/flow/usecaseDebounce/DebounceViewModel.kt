@@ -3,18 +3,44 @@ package com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounc
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.FlowMockApi
+import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce.database.CryptoCurrencyDao
+import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce.database.mapToEntityList
+import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce.database.mapToUiModelList
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class DebounceViewModel(
-    private val mockApi: FlowMockApi = mockApi()
+    private val mockApi: FlowMockApi = mockApi(),
+    private val cryptoCurrencyDatabase: CryptoCurrencyDao
 ) : ViewModel() {
 
     private var searchInputFlow: Flow<String>? = null
 
-    val uiState = MutableStateFlow<UiState>(UiState.Initial)
+    init {
+        viewModelScope.launch {
+            while (true) {
+                delay(3000)
+                val cryptoCurrencyPrices = mockApi.getCurrentCryptoCurrencyPrices()
+                cryptoCurrencyDatabase.insert(cryptoCurrencyPrices.mapToEntityList())
+            }
+        }
+    }
 
-    fun setSearchInputFlow(searchInputFlow: Flow<String>) {
+    val uiState = cryptoCurrencyDatabase
+        .latestCryptoCurrencyPrices()
+        .map { cryptoCurrencyList ->
+            UiState.Success(cryptoCurrencyList.mapToUiModelList())
+        }.onEach {
+            Timber.d("New UiState: ${it.javaClass}")
+        }.stateIn(
+            initialValue = UiState.Loading,
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000)
+        )
+
+    /*fun setSearchInputFlow(searchInputFlow: Flow<String>) {
         this.searchInputFlow = searchInputFlow
 
         searchInputFlow
@@ -26,11 +52,10 @@ class DebounceViewModel(
             .debounce(1000)
             .onEach { searchTerm ->
                 Timber.d("Starting network request with search term: $searchTerm")
-                val stockList = mockApi.getAllCurrentStockPrices(searchTerm)
-
-                uiState.value = UiState.Success(stockList)
+                val cryptoCurrencyList = mockApi.getCurrentCryptoCurrencyPrices()
+                uiState.value = UiState.Success(cryptoCurrencyList)
             }.launchIn(viewModelScope)
-    }
+    }*/
 
 
 }
