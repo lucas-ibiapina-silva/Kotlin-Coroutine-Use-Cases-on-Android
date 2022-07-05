@@ -19,9 +19,12 @@ class CryptoCurrencyAdapter(private val cryptoCurrencyList: List<CryptoCurrency>
         return ViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.binding.name.text = cryptoCurrencyList[position].name
-        holder.binding.currentPrice.text = "$${cryptoCurrencyList[position].currentPriceUsd}"
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = with(holder.binding){
+        val cryptoCurrency = cryptoCurrencyList[position]
+        index.text = cryptoCurrencyList.indexOf(cryptoCurrency).toString()
+        name.text = cryptoCurrency.name
+        marketCap.text = cryptoCurrency.marketCap.toString()
+        currentPrice.text = "$${cryptoCurrency.currentPriceUsd}"
     }
 
     override fun getItemCount(): Int {

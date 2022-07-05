@@ -77,8 +77,8 @@ class DebounceActivity : BaseActivity() {
             }
             is UiState.Success -> {
                 binding.recyclerView.setVisible()
-                binding.recyclerView.adapter = CryptoCurrencyAdapter(uiState.stockList)
-                binding.progressBar.setGone()
+                binding.recyclerView.adapter = CryptoCurrencyAdapter(uiState.cryptoCurrencyList)
+                binding.progressBar.setVisible()
             }
         }
     }

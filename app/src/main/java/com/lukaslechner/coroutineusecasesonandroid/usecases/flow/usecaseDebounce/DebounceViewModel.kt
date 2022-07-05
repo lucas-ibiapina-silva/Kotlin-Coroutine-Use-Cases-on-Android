@@ -30,8 +30,16 @@ class DebounceViewModel(
 
     val uiState = cryptoCurrencyDatabase
         .latestCryptoCurrencyPrices()
+        .map { entityList ->
+            entityList.mapToUiModelList()
+        }
+        .map {
+            it.map { cryptoCurrency ->
+                cryptoCurrency.copy(marketCap = cryptoCurrency.currentPriceUsd * cryptoCurrency.totalSupply)
+            }
+        }
         .map { cryptoCurrencyList ->
-            UiState.Success(cryptoCurrencyList.mapToUiModelList())
+            UiState.Success(cryptoCurrencyList)
         }.onEach {
             Timber.d("New UiState: ${it.javaClass}")
         }.stateIn(

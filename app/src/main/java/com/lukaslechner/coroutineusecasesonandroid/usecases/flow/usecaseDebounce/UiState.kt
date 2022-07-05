@@ -5,6 +5,6 @@ import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.CryptoCurr
 sealed class UiState {
     object Initial : UiState()
     object Loading : UiState()
-    data class Success(val stockList: List<CryptoCurrency>) : UiState()
+    data class Success(val cryptoCurrencyList: List<CryptoCurrency>) : UiState()
     data class Error(val message: String) : UiState()
 }

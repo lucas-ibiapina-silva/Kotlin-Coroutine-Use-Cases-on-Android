@@ -12,7 +12,7 @@ data class StockListing(val name: String, val symbol: String)
 data class CryptoCurrencyDTO(
     val name: String,
     val symbol: String,
-    val totalSupply: Int,
+    @SerializedName("total_supply") val totalSupply: Float,
     val quote: Quote
 )
 
@@ -22,8 +22,9 @@ data class USD(val price: Float)
 data class CryptoCurrency(
     val name: String,
     val symbol: String,
-    val totalSupply: Int,
-    val currentPriceUsd: Float
+    val totalSupply: Float,
+    val currentPriceUsd: Float,
+    val marketCap: Float = 0f
 )
 
 fun List<CryptoCurrencyDTO>.toCryptoCurrencyList() = this.map { it.toCryptoCurrency() }

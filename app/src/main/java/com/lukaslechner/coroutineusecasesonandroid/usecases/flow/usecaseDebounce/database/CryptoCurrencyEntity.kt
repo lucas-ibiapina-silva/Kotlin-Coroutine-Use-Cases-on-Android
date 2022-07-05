@@ -8,7 +8,7 @@ import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.CryptoCurr
 data class CryptoCurrencyEntity(
     @PrimaryKey val symbol: String,
     val name: String,
-    val totalSupply: Int,
+    val totalSupply: Float,
     val priceUsd: Float
 )
 
