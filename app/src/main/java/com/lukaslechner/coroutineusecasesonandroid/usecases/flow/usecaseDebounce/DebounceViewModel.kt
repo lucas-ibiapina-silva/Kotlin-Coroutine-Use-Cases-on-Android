@@ -9,6 +9,8 @@ import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import org.joda.time.LocalDateTime
+import org.joda.time.format.DateTimeFormat
 import timber.log.Timber
 
 class DebounceViewModel(
@@ -47,6 +49,23 @@ class DebounceViewModel(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000)
         )
+
+    val currentTime: StateFlow<String> = ticker()
+        .map { LocalDateTime.now() }
+        .map { it.toString(DateTimeFormat.fullTime()) }
+        .distinctUntilChanged()
+        .stateIn(
+        initialValue = LocalDateTime.now().toString(DateTimeFormat.fullTime()),
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000)
+    )
+
+    fun ticker(interval: Long = 100) = flow {
+        while (true) {
+            emit(Unit)
+            delay(interval)
+        }
+    }
 
     /*fun setSearchInputFlow(searchInputFlow: Flow<String>) {
         this.searchInputFlow = searchInputFlow

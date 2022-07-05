@@ -19,6 +19,8 @@ import com.lukaslechner.coroutineusecasesonandroid.utils.setVisible
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
+import org.joda.time.LocalDateTime
+import org.joda.time.format.DateTimeFormat
 
 class DebounceActivity : BaseActivity() {
 
@@ -44,7 +46,8 @@ class DebounceActivity : BaseActivity() {
                     start: Int,
                     count: Int,
                     after: Int
-                ) {}
+                ) {
+                }
 
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
@@ -62,8 +65,15 @@ class DebounceActivity : BaseActivity() {
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect{ uiState ->
-                    render(uiState)
+                launch {
+                    viewModel.uiState.collect { uiState ->
+                        render(uiState)
+                    }
+                }
+                launch {
+                    viewModel.currentTime.collect{
+                        binding.currentTime.text = "currentTime: $it"
+                    }
                 }
             }
         }
@@ -77,6 +87,7 @@ class DebounceActivity : BaseActivity() {
             }
             is UiState.Success -> {
                 binding.recyclerView.setVisible()
+                binding.lastUpdateTime.text = "lastUpdateTime: ${LocalDateTime.now().toString(DateTimeFormat.fullTime())}"
                 binding.recyclerView.adapter = CryptoCurrencyAdapter(uiState.cryptoCurrencyList)
                 binding.progressBar.setVisible()
             }
