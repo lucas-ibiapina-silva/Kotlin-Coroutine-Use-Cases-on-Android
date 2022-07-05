@@ -12,7 +12,7 @@ class DebounceViewModel(
 
     private var searchInputFlow: Flow<String>? = null
 
-    val uiState = MutableStateFlow<UiState>(UiState.Loading)
+    val uiState = MutableStateFlow<UiState>(UiState.Initial)
 
     fun setSearchInputFlow(searchInputFlow: Flow<String>) {
         this.searchInputFlow = searchInputFlow
@@ -27,6 +27,7 @@ class DebounceViewModel(
             .onEach { searchTerm ->
                 Timber.d("Starting network request with search term: $searchTerm")
                 val stockList = mockApi.getAllCurrentStockPrices(searchTerm)
+
                 uiState.value = UiState.Success(stockList)
             }.launchIn(viewModelScope)
     }
