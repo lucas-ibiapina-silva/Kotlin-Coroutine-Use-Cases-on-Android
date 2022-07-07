@@ -40,15 +40,14 @@ class DebounceViewModel(
             it.map { cryptoCurrency ->
                 cryptoCurrency.copy(marketCap = cryptoCurrency.currentPriceUsd * cryptoCurrency.totalSupply)
             }
-        }.runningReduce { last, current ->
-            current.map { current ->
-                val lastPrice = last.single{it.name == current.name}.currentPriceUsd
-                return@map if (current.currentPriceUsd < lastPrice) {
-                    current.copy(priceTrend = PriceTrend.DOWN)
-                } else if (current.currentPriceUsd == lastPrice) {
-                    current.copy(priceTrend = PriceTrend.NEUTRAL)
-                } else {
-                    current.copy(priceTrend = PriceTrend.UP)
+        }.runningReduce { lastCryptoCurrencyList, currentCryptoCurrencyList ->
+            currentCryptoCurrencyList.map { currentCrypto ->
+                val lastPrice =
+                    lastCryptoCurrencyList.single { it.name == currentCrypto.name }.currentPriceUsd
+                return@map when {
+                    currentCrypto.currentPriceUsd < lastPrice -> currentCrypto.copy(priceTrend = PriceTrend.DOWN)
+                    currentCrypto.currentPriceUsd == lastPrice -> currentCrypto.copy(priceTrend = PriceTrend.NEUTRAL)
+                    else -> currentCrypto.copy(priceTrend = PriceTrend.UP)
                 }
             }
         }
