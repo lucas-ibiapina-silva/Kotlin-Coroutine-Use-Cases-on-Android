@@ -48,4 +48,13 @@
         android:textSize="14sp"
         tools:text="$2.123" />
 
+    <ImageView
+        android:id="@+id/priceTrendIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="end"
+        android:padding="24dp"
+        android:src="@drawable/ic_baseline_trending_up_24" />
+
 </LinearLayout>

@@ -24,8 +24,13 @@ data class CryptoCurrency(
     val symbol: String,
     val totalSupply: Float,
     val currentPriceUsd: Float,
-    val marketCap: Float = 0f
+    val marketCap: Float = 0f,
+    val priceTrend: PriceTrend = PriceTrend.UNKNOWN
 )
+
+enum class PriceTrend {
+    UP, DOWN, NEUTRAL, UNKNOWN
+}
 
 fun List<CryptoCurrencyDTO>.toCryptoCurrencyList() = this.map { it.toCryptoCurrency() }
 

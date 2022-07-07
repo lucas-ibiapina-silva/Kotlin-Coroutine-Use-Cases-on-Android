@@ -3,6 +3,7 @@ package com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounc
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.FlowMockApi
+import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.PriceTrend
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce.database.CryptoCurrencyDao
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce.database.mapToEntityList
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce.database.mapToUiModelList
@@ -39,6 +40,17 @@ class DebounceViewModel(
             it.map { cryptoCurrency ->
                 cryptoCurrency.copy(marketCap = cryptoCurrency.currentPriceUsd * cryptoCurrency.totalSupply)
             }
+        }.runningReduce { last, current ->
+            current.map { current ->
+                val lastPrice = last.single{it.name == current.name}.currentPriceUsd
+                return@map if (current.currentPriceUsd < lastPrice) {
+                    current.copy(priceTrend = PriceTrend.DOWN)
+                } else if (current.currentPriceUsd == lastPrice) {
+                    current.copy(priceTrend = PriceTrend.NEUTRAL)
+                } else {
+                    current.copy(priceTrend = PriceTrend.UP)
+                }
+            }
         }
         .map { cryptoCurrencyList ->
             UiState.Success(cryptoCurrencyList)
@@ -51,16 +63,17 @@ class DebounceViewModel(
         )
 
     val currentTime: StateFlow<String> = ticker()
+        .conflate()
         .map { LocalDateTime.now() }
         .map { it.toString(DateTimeFormat.fullTime()) }
         .distinctUntilChanged()
         .stateIn(
-        initialValue = LocalDateTime.now().toString(DateTimeFormat.fullTime()),
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000)
-    )
+            initialValue = LocalDateTime.now().toString(DateTimeFormat.fullTime()),
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000)
+        )
 
-    fun ticker(interval: Long = 100) = flow {
+    fun ticker(interval: Long = 500) = flow {
         while (true) {
             emit(Unit)
             delay(interval)
