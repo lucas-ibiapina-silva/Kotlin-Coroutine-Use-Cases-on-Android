@@ -3,6 +3,7 @@ package com.lukaslechner.coroutineusecasesonandroid
 import android.app.Application
 import com.lukaslechner.coroutineusecasesonandroid.usecases.coroutines.usecase14.AndroidVersionDatabase
 import com.lukaslechner.coroutineusecasesonandroid.usecases.coroutines.usecase14.AndroidVersionRepository
+import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce.NetworkStatusProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import timber.log.Timber
@@ -17,6 +18,10 @@ class CoroutineUsecasesOnAndroidApplication : Application() {
             database,
             applicationScope
         )
+    }
+
+    val networkStatusProvider by lazy {
+        NetworkStatusProvider(applicationContext)
     }
 
     override fun onCreate() {

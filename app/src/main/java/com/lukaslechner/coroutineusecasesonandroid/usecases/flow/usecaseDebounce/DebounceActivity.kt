@@ -9,6 +9,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.DividerItemDecoration
+import com.lukaslechner.coroutineusecasesonandroid.CoroutineUsecasesOnAndroidApplication
 import com.lukaslechner.coroutineusecasesonandroid.R
 import com.lukaslechner.coroutineusecasesonandroid.base.BaseActivity
 import com.lukaslechner.coroutineusecasesonandroid.base.flowUseCase3Description
@@ -16,6 +17,8 @@ import com.lukaslechner.coroutineusecasesonandroid.databinding.ActivityFlowDebou
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce.database.CryptoCurrencyDatabase
 import com.lukaslechner.coroutineusecasesonandroid.utils.setGone
 import com.lukaslechner.coroutineusecasesonandroid.utils.setVisible
+import com.lukaslechner.coroutineusecasesonandroid.utils.toast
+import kotlinx.coroutines.flow.runningReduce
 import kotlinx.coroutines.launch
 import org.joda.time.LocalDateTime
 import org.joda.time.format.DateTimeFormat
@@ -27,7 +30,8 @@ class DebounceActivity : BaseActivity() {
     private val viewModel: DebounceViewModel by viewModels {
         ViewModelFactory(
             api = mockApi(),
-            database = CryptoCurrencyDatabase.getInstance(applicationContext).cryptoCurrencyDao()
+            database = CryptoCurrencyDatabase.getInstance(applicationContext).cryptoCurrencyDao(),
+            (application as CoroutineUsecasesOnAndroidApplication).networkStatusProvider
         )
     }
 
@@ -37,37 +41,14 @@ class DebounceActivity : BaseActivity() {
 
         binding.recyclerView.addItemDecoration(initItemDecoration())
 
-/*        val searchInputFlow = callbackFlow {
-            val textWatcher = object : TextWatcher {
-                override fun beforeTextChanged(
-                    s: CharSequence?,
-                    start: Int,
-                    count: Int,
-                    after: Int
-                ) {
-                }
-
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
-                override fun afterTextChanged(s: Editable?) {
-                    s?.toString()?.let { trySend(it) }
-                }
-            }
-            binding.searchFieldEditText.addTextChangedListener(textWatcher)
-            awaitClose {
-                binding.searchFieldEditText.removeTextChangedListener(textWatcher)
-            }
-        }
-
-        viewModel.setSearchInputFlow(searchInputFlow)*/
-
         binding.searchFieldEditText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(
                 s: CharSequence?,
                 start: Int,
                 count: Int,
                 after: Int
-            ) {}
+            ) {
+            }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
@@ -84,9 +65,22 @@ class DebounceActivity : BaseActivity() {
                     }
                 }
                 launch {
-                    viewModel.currentTime.collect{
+                    viewModel.currentTime.collect {
                         binding.currentTime.text = "currentTime: $it"
                     }
+                }
+                launch {
+                    viewModel.networkStatusChannel.runningReduce { last, current ->
+                        if (last is NetworkStatusProvider.NetworkStatus.Unavailable && current is NetworkStatusProvider.NetworkStatus.Available) {
+                            toast("Network connection available again, continuing live tracking")
+                        }
+                        current
+                    }
+                        .collect {
+                            if (it is NetworkStatusProvider.NetworkStatus.Unavailable) {
+                                toast("No network connection, stopping live tracking")
+                            }
+                        }
                 }
             }
         }
@@ -100,7 +94,8 @@ class DebounceActivity : BaseActivity() {
             }
             is UiState.Success -> {
                 binding.recyclerView.setVisible()
-                binding.lastUpdateTime.text = "lastUpdateTime: ${LocalDateTime.now().toString(DateTimeFormat.fullTime())}"
+                binding.lastUpdateTime.text =
+                    "lastUpdateTime: ${LocalDateTime.now().toString(DateTimeFormat.fullTime())}"
                 binding.recyclerView.adapter = CryptoCurrencyAdapter(uiState.cryptoCurrencyList)
                 binding.progressBar.setVisible()
             }

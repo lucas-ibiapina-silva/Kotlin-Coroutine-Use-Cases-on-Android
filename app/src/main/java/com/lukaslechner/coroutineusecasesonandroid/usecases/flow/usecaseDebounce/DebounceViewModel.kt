@@ -7,29 +7,44 @@ import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.PriceTrend
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce.database.CryptoCurrencyDao
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce.database.mapToEntityList
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce.database.mapToUiModelList
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.isActive
 import org.joda.time.LocalDateTime
 import org.joda.time.format.DateTimeFormat
 import timber.log.Timber
 
 class DebounceViewModel(
     private val mockApi: FlowMockApi = mockApi(),
-    private val cryptoCurrencyDatabase: CryptoCurrencyDao
+    private val cryptoCurrencyDatabase: CryptoCurrencyDao,
+    private val networkStatusProvider: NetworkStatusProvider
 ) : ViewModel() {
 
     private var searchInputFlow: Flow<String>? = null
 
+    private fun intervalFlow(interval: Long) = flow {
+        while (currentCoroutineContext().isActive) {
+            delay(interval)
+            emit(Unit)
+        }
+    }
+
     init {
-        viewModelScope.launch {
-            while (true) {
-                delay(3000)
+        intervalFlow(3000)
+            .combine(networkStatusProvider.networkStatus) { _, networkStatus -> networkStatus }
+            .filter { networkStatus -> networkStatus is NetworkStatusProvider.NetworkStatus.Available } // only on available internet connection
+            .buffer()
+            .onEach {
+                Timber.d("fetching current crypto currency prices")
                 val cryptoCurrencyPrices = mockApi.getCurrentCryptoCurrencyPrices()
                 cryptoCurrencyDatabase.insert(cryptoCurrencyPrices.mapToEntityList())
             }
-        }
+            .launchIn(viewModelScope)
     }
+
+    val networkStatusChannel = networkStatusProvider.networkStatus
 
     val searchTermStateFlow = MutableStateFlow("")
     val searchTermFlow = searchTermStateFlow.debounce(1000)
@@ -38,15 +53,18 @@ class DebounceViewModel(
         searchTermStateFlow.value = searchTerm
     }
 
-    val uiState = combine(cryptoCurrencyDatabase.latestCryptoCurrencyPrices(), searchTermFlow) { latestPrices, searchTerm ->
+    val uiState = combine(
+        cryptoCurrencyDatabase.latestCryptoCurrencyPrices(),
+        searchTermFlow
+    ) { latestPrices, searchTerm ->
         return@combine if (searchTerm.length < 3) {
             latestPrices
         } else {
             latestPrices.filter { it.name.contains(searchTerm, ignoreCase = true) }
         }
     }.map { entityList ->
-            entityList.mapToUiModelList()
-        }
+        entityList.mapToUiModelList()
+    }
         .map {
             it.map { cryptoCurrency ->
                 cryptoCurrency.copy(marketCap = cryptoCurrency.currentPriceUsd * cryptoCurrency.totalSupply)
@@ -54,14 +72,15 @@ class DebounceViewModel(
         }.runningReduce { lastCryptoCurrencyList, currentCryptoCurrencyList ->
             currentCryptoCurrencyList.map { currentCrypto ->
                 val lastPrice =
-                    lastCryptoCurrencyList.find { it.name == currentCrypto.name }?.currentPriceUsd ?: return@map currentCrypto
+                    lastCryptoCurrencyList.find { it.name == currentCrypto.name }?.currentPriceUsd
+                        ?: return@map currentCrypto
                 return@map when {
                     currentCrypto.currentPriceUsd < lastPrice -> currentCrypto.copy(priceTrend = PriceTrend.DOWN)
                     currentCrypto.currentPriceUsd == lastPrice -> currentCrypto.copy(priceTrend = PriceTrend.NEUTRAL)
                     else -> currentCrypto.copy(priceTrend = PriceTrend.UP)
                 }
             }
-        }
+        }.flowOn(Dispatchers.Default)
         .map { cryptoCurrencyList ->
             UiState.Success(cryptoCurrencyList)
         }.onEach {
