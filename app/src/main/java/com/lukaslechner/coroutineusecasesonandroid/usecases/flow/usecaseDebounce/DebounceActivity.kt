@@ -16,8 +16,6 @@ import com.lukaslechner.coroutineusecasesonandroid.databinding.ActivityFlowDebou
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce.database.CryptoCurrencyDatabase
 import com.lukaslechner.coroutineusecasesonandroid.utils.setGone
 import com.lukaslechner.coroutineusecasesonandroid.utils.setVisible
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import org.joda.time.LocalDateTime
 import org.joda.time.format.DateTimeFormat
@@ -39,7 +37,7 @@ class DebounceActivity : BaseActivity() {
 
         binding.recyclerView.addItemDecoration(initItemDecoration())
 
-        val searchInputFlow = callbackFlow {
+/*        val searchInputFlow = callbackFlow {
             val textWatcher = object : TextWatcher {
                 override fun beforeTextChanged(
                     s: CharSequence?,
@@ -61,7 +59,22 @@ class DebounceActivity : BaseActivity() {
             }
         }
 
-        // viewModel.setSearchInputFlow(searchInputFlow)
+        viewModel.setSearchInputFlow(searchInputFlow)*/
+
+        binding.searchFieldEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(
+                s: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int
+            ) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+            override fun afterTextChanged(s: Editable?) {
+                viewModel.updateSearchTerm(s.toString())
+            }
+        })
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {

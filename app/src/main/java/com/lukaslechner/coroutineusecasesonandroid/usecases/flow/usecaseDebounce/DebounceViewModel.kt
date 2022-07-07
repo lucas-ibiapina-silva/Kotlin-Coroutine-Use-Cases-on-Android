@@ -31,9 +31,20 @@ class DebounceViewModel(
         }
     }
 
-    val uiState = cryptoCurrencyDatabase
-        .latestCryptoCurrencyPrices()
-        .map { entityList ->
+    val searchTermStateFlow = MutableStateFlow("")
+    val searchTermFlow = searchTermStateFlow.debounce(1000)
+
+    fun updateSearchTerm(searchTerm: String) {
+        searchTermStateFlow.value = searchTerm
+    }
+
+    val uiState = combine(cryptoCurrencyDatabase.latestCryptoCurrencyPrices(), searchTermFlow) { latestPrices, searchTerm ->
+        return@combine if (searchTerm.length < 3) {
+            latestPrices
+        } else {
+            latestPrices.filter { it.name.contains(searchTerm, ignoreCase = true) }
+        }
+    }.map { entityList ->
             entityList.mapToUiModelList()
         }
         .map {
@@ -43,7 +54,7 @@ class DebounceViewModel(
         }.runningReduce { lastCryptoCurrencyList, currentCryptoCurrencyList ->
             currentCryptoCurrencyList.map { currentCrypto ->
                 val lastPrice =
-                    lastCryptoCurrencyList.single { it.name == currentCrypto.name }.currentPriceUsd
+                    lastCryptoCurrencyList.find { it.name == currentCrypto.name }?.currentPriceUsd ?: return@map currentCrypto
                 return@map when {
                     currentCrypto.currentPriceUsd < lastPrice -> currentCrypto.copy(priceTrend = PriceTrend.DOWN)
                     currentCrypto.currentPriceUsd == lastPrice -> currentCrypto.copy(priceTrend = PriceTrend.NEUTRAL)
@@ -79,7 +90,7 @@ class DebounceViewModel(
         }
     }
 
-    /*fun setSearchInputFlow(searchInputFlow: Flow<String>) {
+/*    fun setSearchInputFlow(searchInputFlow: Flow<String>) {
         this.searchInputFlow = searchInputFlow
 
         searchInputFlow
