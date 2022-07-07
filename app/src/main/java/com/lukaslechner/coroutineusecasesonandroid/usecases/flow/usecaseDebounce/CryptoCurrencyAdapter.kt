@@ -7,6 +7,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.lukaslechner.coroutineusecasesonandroid.R
 import com.lukaslechner.coroutineusecasesonandroid.databinding.RecyclerviewItemCryptoCurrencyBinding
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.CryptoCurrency
+import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.PriceTrend
+import com.lukaslechner.coroutineusecasesonandroid.utils.setInvisible
 
 class CryptoCurrencyAdapter(private val cryptoCurrencyList: List<CryptoCurrency>): RecyclerView.Adapter<CryptoCurrencyAdapter.ViewHolder>() {
 
@@ -25,6 +27,11 @@ class CryptoCurrencyAdapter(private val cryptoCurrencyList: List<CryptoCurrency>
         name.text = cryptoCurrency.name
         marketCap.text = cryptoCurrency.marketCap.toString()
         currentPrice.text = "$${cryptoCurrency.currentPriceUsd}"
+        when (cryptoCurrency.priceTrend) {
+            PriceTrend.UP -> priceTrendIcon.setImageResource(R.drawable.ic_baseline_trending_up_24)
+            PriceTrend.DOWN -> priceTrendIcon.setImageResource(R.drawable.ic_baseline_trending_down_24)
+            else -> priceTrendIcon.setInvisible()
+        }
     }
 
     override fun getItemCount(): Int {
