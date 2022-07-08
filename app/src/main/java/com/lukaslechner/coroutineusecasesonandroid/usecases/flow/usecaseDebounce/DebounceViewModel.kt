@@ -55,9 +55,11 @@ class DebounceViewModel(
         .transform {
             emit(mockApi.getCurrentCurrencyRate())
         }
+        .distinctUntilChanged()
 
     private val cryptoFlow =
-        cryptoCurrencyDatabase.latestCryptoCurrencyPrices().map { it.mapToUiModelList() }.flowOn(defaultDispatcher)
+        cryptoCurrencyDatabase.latestCryptoCurrencyPrices().map { it.mapToUiModelList() }
+            .flowOn(defaultDispatcher)
 
     private val cryptoFlowEuro: Flow<List<CryptoCurrency>> = combine(
         cryptoFlow,
@@ -77,20 +79,29 @@ class DebounceViewModel(
     }.flowOn(defaultDispatcher)
 
     // depending on the selected currency, either the items from the dollar price stream or the
-    private val userDefinedCurrencyCryptoFlow: Flow<List<CryptoCurrency>> = selectedCurrency.flatMapLatest { selectedCurrency ->
-        when (selectedCurrency) {
-            Currency.DOLLAR -> cryptoFlow
-            Currency.EURO -> cryptoFlowEuro
+    private val userDefinedCurrencyCryptoFlow: Flow<List<CryptoCurrency>> =
+        selectedCurrency.flatMapLatest { selectedCurrency ->
+            when (selectedCurrency) {
+                Currency.DOLLAR -> cryptoFlow
+                Currency.EURO -> cryptoFlowEuro
+            }
         }
-    }
 
     val networkStatusChannel = networkStatusProvider.networkStatus
 
-    val searchTermStateFlow = MutableStateFlow("")
-    val searchTermFlow = searchTermStateFlow.debounce(1000)
+    val rawSearchTermStateFlow = MutableStateFlow("")
+    val searchTermFlow = rawSearchTermStateFlow
+        .debounce(1000)
+        .map { searchTerm ->
+            when (searchTerm.length) {
+                0 -> SearchTerm.Empty
+                in 1..2 -> SearchTerm.TooShort
+                else -> SearchTerm.Valid(searchTerm)
+            }
+        }.distinctUntilChanged()
 
     fun updateSearchTerm(searchTerm: String) {
-        searchTermStateFlow.value = searchTerm
+        rawSearchTermStateFlow.value = searchTerm
     }
 
     fun changeCurrency() {
@@ -100,50 +111,62 @@ class DebounceViewModel(
         }
     }
 
-    val uiState = combine(
+    private val filteredResult: Flow<Pair<List<CryptoCurrency>, Float?>> = combine(
         userDefinedCurrencyCryptoFlow,
-        searchTermFlow,
+        searchTermFlow.filterNot { it is SearchTerm.TooShort },
     ) { latestPrices, searchTerm ->
-        return@combine if (searchTerm.length < 3) {
-            latestPrices
-        } else {
-            latestPrices.filter { it.name.contains(searchTerm, ignoreCase = true) }
+        return@combine when (searchTerm) {
+            is SearchTerm.Valid -> latestPrices.filter {
+                it.name.contains(
+                    searchTerm.searchTerm,
+                    ignoreCase = true
+                )
+            }
+            else -> latestPrices
         }
+    }.map {
+        val startCalculation = System.currentTimeMillis()
+        val result = it.map { cryptoCurrency ->
+            cryptoCurrency.copy(marketCap = cryptoCurrency.currentPrice * cryptoCurrency.totalSupply)
+        }
+        val endCalculation = System.currentTimeMillis()
+        Timber.d("Market Cap calculation took ${endCalculation - startCalculation}ms")
+        result
+    }.runningReduce { lastCryptoCurrencyList, currentCryptoCurrencyList ->
+        currentCryptoCurrencyList.map { currentCrypto ->
+            val lastPrice =
+                lastCryptoCurrencyList.find { it.name == currentCrypto.name }?.currentPrice
+                    ?: return@map currentCrypto
+            return@map when {
+                currentCrypto.currentPrice < lastPrice -> currentCrypto.copy(priceTrend = PriceTrend.DOWN)
+                currentCrypto.currentPrice == lastPrice -> currentCrypto.copy(priceTrend = PriceTrend.NEUTRAL)
+                else -> currentCrypto.copy(priceTrend = PriceTrend.UP)
+            }
+        }
+    }.map { cryptoCurrencyList ->
+        val startCalculation = System.currentTimeMillis()
+        val totalMarketCap = cryptoCurrencyList.map { it.marketCap }
+            .reduceOrNull { acc, cryptoCurrency -> acc + cryptoCurrency }
+        val endCalculation = System.currentTimeMillis()
+        cryptoCurrencyList.sortedByDescending { it.marketCap }
+        Timber.d("Total Market Cap calculation ($totalMarketCap) and sorting took ${endCalculation - startCalculation}ms")
+        Pair(cryptoCurrencyList, totalMarketCap)
+    }.flowOn(defaultDispatcher)
+
+    val uiState = MutableStateFlow<UiState>(UiState.Initial)
+
+    init {
+        searchTermFlow
+            .filterNot { it is SearchTerm.TooShort }
+            .combine(selectedCurrency) { searchTerm, selectedCurrency ->
+                uiState.value = UiState.Loading
+            }.flatMapLatest {
+                filteredResult
+            }.onEach {
+                uiState.value = UiState.Success(it.first, it.second)
+            }.launchIn(viewModelScope)
+
     }
-        .map {
-            val startCalculation = System.currentTimeMillis()
-            val result = it.map { cryptoCurrency ->
-                cryptoCurrency.copy(marketCap = cryptoCurrency.currentPrice * cryptoCurrency.totalSupply)
-            }
-            val endCalculation = System.currentTimeMillis()
-            Timber.d("Market Cap calculation took ${endCalculation - startCalculation}ms")
-            result
-        }.runningReduce { lastCryptoCurrencyList, currentCryptoCurrencyList ->
-            currentCryptoCurrencyList.map { currentCrypto ->
-                val lastPrice =
-                    lastCryptoCurrencyList.find { it.name == currentCrypto.name }?.currentPrice
-                        ?: return@map currentCrypto
-                return@map when {
-                    currentCrypto.currentPrice < lastPrice -> currentCrypto.copy(priceTrend = PriceTrend.DOWN)
-                    currentCrypto.currentPrice == lastPrice -> currentCrypto.copy(priceTrend = PriceTrend.NEUTRAL)
-                    else -> currentCrypto.copy(priceTrend = PriceTrend.UP)
-                }
-            }
-        }.flowOn(defaultDispatcher)
-        .map { cryptoCurrencyList ->
-            val startCalculation = System.currentTimeMillis()
-            val totalMarketCap = cryptoCurrencyList.map { it.marketCap }.reduce { acc, cryptoCurrency -> acc + cryptoCurrency}
-            val endCalculation = System.currentTimeMillis()
-            cryptoCurrencyList.sortedByDescending { it.marketCap }
-            Timber.d("Total Market Cap calculation ($totalMarketCap) and sorting took ${endCalculation - startCalculation}ms")
-            UiState.Success(cryptoCurrencyList, totalMarketCap)
-        }.onEach {
-            Timber.d("New UiState: ${it.javaClass}")
-        }.stateIn(
-            initialValue = UiState.Loading,
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000)
-        )
 
     val currentTime: StateFlow<String> = ticker()
         .conflate()
@@ -161,5 +184,11 @@ class DebounceViewModel(
             emit(Unit)
             delay(interval)
         }
+    }
+
+    sealed class SearchTerm {
+        object Empty : SearchTerm()
+        object TooShort : SearchTerm()
+        class Valid(val searchTerm: String) : SearchTerm()
     }
 }

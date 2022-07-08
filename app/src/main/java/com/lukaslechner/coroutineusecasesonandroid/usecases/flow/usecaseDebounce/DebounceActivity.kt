@@ -101,13 +101,20 @@ class DebounceActivity : BaseActivity() {
             is UiState.Loading -> {
                 binding.progressBar.setVisible()
                 binding.recyclerView.setGone()
+                binding.noResultTextView.setGone()
             }
             is UiState.Success -> {
-                binding.recyclerView.setVisible()
-                binding.lastUpdateTime.text =
-                    "lastUpdateTime: ${LocalDateTime.now().toString(DateTimeFormat.fullTime())}"
-                binding.recyclerView.adapter = CryptoCurrencyAdapter(uiState.cryptoCurrencyList)
-                binding.progressBar.setGone()
+                if (uiState.cryptoCurrencyList.isEmpty()) {
+                    binding.noResultTextView.setVisible()
+                    binding.recyclerView.setGone()
+                    binding.progressBar.setGone()
+                } else {
+                    binding.recyclerView.setVisible()
+                    binding.lastUpdateTime.text =
+                        "lastUpdateTime: ${LocalDateTime.now().toString(DateTimeFormat.fullTime())}"
+                    binding.recyclerView.adapter = CryptoCurrencyAdapter(uiState.cryptoCurrencyList)
+                    binding.progressBar.setGone()
+                }
             }
         }
     }
