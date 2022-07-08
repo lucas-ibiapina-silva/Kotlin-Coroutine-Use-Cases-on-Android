@@ -17,7 +17,7 @@ fun List<CryptoCurrencyEntity>.mapToUiModelList() = map {
         name = it.name,
         symbol = it.symbol,
         totalSupply = it.totalSupply,
-        currentPriceUsd = it.priceUsd)
+        currentPrice = it.priceUsd)
 }
 
 fun CryptoCurrency.mapToEntity() =
@@ -25,7 +25,7 @@ fun CryptoCurrency.mapToEntity() =
         name = this.name,
         symbol = this.symbol,
         totalSupply = this.totalSupply,
-        priceUsd = currentPriceUsd
+        priceUsd = currentPrice
     )
 
 fun List<CryptoCurrency>.mapToEntityList() = map { it.mapToEntity() }

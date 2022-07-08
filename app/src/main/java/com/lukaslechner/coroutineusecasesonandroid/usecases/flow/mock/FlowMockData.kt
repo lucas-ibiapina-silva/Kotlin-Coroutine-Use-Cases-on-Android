@@ -23,10 +23,15 @@ data class CryptoCurrency(
     val name: String,
     val symbol: String,
     val totalSupply: Float,
-    val currentPriceUsd: Float,
+    val currentPrice: Float,
+    val currency: Currency = Currency.DOLLAR,
     val marketCap: Float = 0f,
     val priceTrend: PriceTrend = PriceTrend.UNKNOWN
 )
+
+enum class Currency {
+    DOLLAR, EURO
+}
 
 enum class PriceTrend {
     UP, DOWN, NEUTRAL, UNKNOWN
@@ -38,7 +43,7 @@ fun CryptoCurrencyDTO.toCryptoCurrency(): CryptoCurrency = CryptoCurrency(
     name = this.name,
     symbol = this.symbol,
     totalSupply = this.totalSupply,
-    currentPriceUsd = this.quote.usd.price
+    currentPrice = this.quote.usd.price
 )
 
 data class CurrencyRate(val usdInEuro: Float)
@@ -54,7 +59,7 @@ var currentCurrencyRate = 1.00f
 fun fakeCurrentCurrencyRate(): CurrencyRate {
     val randomIncreaseOrDecrease = Random.nextDouble(-0.01, 0.01).toFloat()
     currentCurrencyRate += randomIncreaseOrDecrease
-    return CurrencyRate(randomIncreaseOrDecrease)
+    return CurrencyRate(currentCurrencyRate)
 }
 
 val allParsedStocks: List<StockListing> by lazy {
@@ -73,12 +78,12 @@ val allParsedCryptoCurrencies: List<CryptoCurrency> by lazy {
 val allCryptoCurrenciesWithRandomPrice: List<CryptoCurrency>
     get() {
         return allParsedCryptoCurrencies.map {
-            val currentPrice = it.currentPriceUsd
+            val currentPrice = it.currentPrice
             val randomRangeInPercent = 0.03
             val randomLowerBound = (currentPrice * (1 - randomRangeInPercent))
             val randomUpperBound = (currentPrice * (1 + randomRangeInPercent))
             val randomPrice = Random.nextDouble(randomLowerBound, randomUpperBound).toFloat()
-            it.copy(currentPriceUsd = randomPrice)
+            it.copy(currentPrice = randomPrice)
         }
     }
 

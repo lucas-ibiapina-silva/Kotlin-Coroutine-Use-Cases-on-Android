@@ -3,6 +3,7 @@ package com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounc
 import com.google.gson.Gson
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.allCryptoCurrenciesWithRandomPrice
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.createFlowMockApi
+import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.fakeCurrentCurrencyRate
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.filterStocks
 import com.lukaslechner.coroutineusecasesonandroid.utils.MockNetworkInterceptor
 
@@ -20,5 +21,11 @@ fun mockApi() =
                 body = { Gson().toJson(allCryptoCurrenciesWithRandomPrice) },
                 status = 200,
                 delayInMs = 2000
+            )
+            .mock(
+                path = "/current-currency-rate",
+                body = { Gson().toJson(fakeCurrentCurrencyRate()) },
+                status = 200,
+                delayInMs = 1000,
             )
     )

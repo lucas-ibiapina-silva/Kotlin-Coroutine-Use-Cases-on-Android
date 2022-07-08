@@ -3,6 +3,8 @@ package com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounc
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.Menu
+import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
@@ -40,6 +42,7 @@ class DebounceActivity : BaseActivity() {
         setContentView(binding.root)
 
         binding.recyclerView.addItemDecoration(initItemDecoration())
+        setSupportActionBar(binding.toolbarLayout.toolbar)
 
         binding.searchFieldEditText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(
@@ -82,6 +85,11 @@ class DebounceActivity : BaseActivity() {
                             }
                         }
                 }
+                launch {
+                    viewModel.selectedCurrency.collect{
+
+                    }
+                }
             }
         }
     }
@@ -115,4 +123,18 @@ class DebounceActivity : BaseActivity() {
     }
 
     override fun getToolbarTitle() = flowUseCase3Description
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.flow_usecase_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        when (item.itemId) {
+            R.id.show_prices_in_euro -> viewModel.changeCurrency()
+        }
+
+        return super.onOptionsItemSelected(item)
+    }
 }
