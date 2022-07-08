@@ -55,6 +55,6 @@
         android:layout_weight="0"
         android:padding="4dp"
         android:layout_gravity="center"
-        android:src="@drawable/ic_baseline_trending_up_24" />
+        android:src="@drawable/ic_trend_up_green_24" />
 
 </LinearLayout>

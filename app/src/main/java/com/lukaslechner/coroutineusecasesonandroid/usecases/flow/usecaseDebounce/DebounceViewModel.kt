@@ -6,7 +6,7 @@ import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.*
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce.database.CryptoCurrencyDao
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce.database.mapToEntityList
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce.database.mapToUiModelList
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -14,11 +14,13 @@ import kotlinx.coroutines.isActive
 import org.joda.time.LocalDateTime
 import org.joda.time.format.DateTimeFormat
 import timber.log.Timber
+import kotlin.system.measureTimeMillis
 
 class DebounceViewModel(
     private val mockApi: FlowMockApi = mockApi(),
     private val cryptoCurrencyDatabase: CryptoCurrencyDao,
-    private val networkStatusProvider: NetworkStatusProvider
+    private val networkStatusProvider: NetworkStatusProvider,
+    private val defaultDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
     val selectedCurrency = MutableStateFlow(Currency.DOLLAR)
@@ -55,17 +57,24 @@ class DebounceViewModel(
         }
 
     private val cryptoFlow =
-        cryptoCurrencyDatabase.latestCryptoCurrencyPrices().map { it.mapToUiModelList() }
+        cryptoCurrencyDatabase.latestCryptoCurrencyPrices().map { it.mapToUiModelList() }.flowOn(defaultDispatcher)
 
     private val cryptoFlowEuro: Flow<List<CryptoCurrency>> = combine(
         cryptoFlow,
         currencyRateFlow
     ) { latestCryptoPrice, latestCurrencyRate ->
-        return@combine latestCryptoPrice.map {
-            val euroPrice = it.currentPrice * latestCurrencyRate.usdInEuro
-            it.copy(currency = Currency.EURO, currentPrice = euroPrice)
+        var euroPrices: List<CryptoCurrency>? = null
+        val calculationTime = measureTimeMillis {
+            euroPrices = latestCryptoPrice.map {
+                val euroPrice = it.currentPrice * latestCurrencyRate.usdInEuro
+                it.copy(currency = Currency.EURO, currentPrice = euroPrice)
+            }
         }
-    }
+
+        Timber.d("Calculating euro prices took: $calculationTime ms")
+
+        euroPrices!!
+    }.flowOn(defaultDispatcher)
 
     // depending on the selected currency, either the items from the dollar price stream or the
     private val userDefinedCurrencyCryptoFlow: Flow<List<CryptoCurrency>> = selectedCurrency.flatMapLatest { selectedCurrency ->
@@ -102,9 +111,13 @@ class DebounceViewModel(
         }
     }
         .map {
-            it.map { cryptoCurrency ->
+            val startCalculation = System.currentTimeMillis()
+            val result = it.map { cryptoCurrency ->
                 cryptoCurrency.copy(marketCap = cryptoCurrency.currentPrice * cryptoCurrency.totalSupply)
             }
+            val endCalculation = System.currentTimeMillis()
+            Timber.d("Market Cap calculation took ${endCalculation - startCalculation}ms")
+            result
         }.runningReduce { lastCryptoCurrencyList, currentCryptoCurrencyList ->
             currentCryptoCurrencyList.map { currentCrypto ->
                 val lastPrice =
@@ -116,9 +129,14 @@ class DebounceViewModel(
                     else -> currentCrypto.copy(priceTrend = PriceTrend.UP)
                 }
             }
-        }.flowOn(Dispatchers.Default)
+        }.flowOn(defaultDispatcher)
         .map { cryptoCurrencyList ->
-            UiState.Success(cryptoCurrencyList)
+            val startCalculation = System.currentTimeMillis()
+            val totalMarketCap = cryptoCurrencyList.map { it.marketCap }.reduce { acc, cryptoCurrency -> acc + cryptoCurrency}
+            val endCalculation = System.currentTimeMillis()
+            cryptoCurrencyList.sortedByDescending { it.marketCap }
+            Timber.d("Total Market Cap calculation ($totalMarketCap) and sorting took ${endCalculation - startCalculation}ms")
+            UiState.Success(cryptoCurrencyList, totalMarketCap)
         }.onEach {
             Timber.d("New UiState: ${it.javaClass}")
         }.stateIn(

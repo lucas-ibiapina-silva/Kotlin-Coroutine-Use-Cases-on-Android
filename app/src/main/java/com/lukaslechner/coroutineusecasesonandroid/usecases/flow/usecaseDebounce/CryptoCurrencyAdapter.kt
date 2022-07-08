@@ -33,8 +33,8 @@ class CryptoCurrencyAdapter(private val cryptoCurrencyList: List<CryptoCurrency>
         }
         currentPrice.text = "$currencySymbol${cryptoCurrency.currentPrice}"
         when (cryptoCurrency.priceTrend) {
-            PriceTrend.UP -> priceTrendIcon.setImageResource(R.drawable.ic_baseline_trending_up_24)
-            PriceTrend.DOWN -> priceTrendIcon.setImageResource(R.drawable.ic_baseline_trending_down_24)
+            PriceTrend.UP -> priceTrendIcon.setImageResource(R.drawable.ic_trend_up_green_24)
+            PriceTrend.DOWN -> priceTrendIcon.setImageResource(R.drawable.ic_trend_down_red_24)
             else -> priceTrendIcon.setInvisible()
         }
     }

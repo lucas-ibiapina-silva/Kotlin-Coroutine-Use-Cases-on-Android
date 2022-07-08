@@ -20,6 +20,7 @@ import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce
 import com.lukaslechner.coroutineusecasesonandroid.utils.setGone
 import com.lukaslechner.coroutineusecasesonandroid.utils.setVisible
 import com.lukaslechner.coroutineusecasesonandroid.utils.toast
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.runningReduce
 import kotlinx.coroutines.launch
 import org.joda.time.LocalDateTime
@@ -33,7 +34,8 @@ class DebounceActivity : BaseActivity() {
         ViewModelFactory(
             api = mockApi(),
             database = CryptoCurrencyDatabase.getInstance(applicationContext).cryptoCurrencyDao(),
-            (application as CoroutineUsecasesOnAndroidApplication).networkStatusProvider
+            (application as CoroutineUsecasesOnAndroidApplication).networkStatusProvider,
+            Dispatchers.Default
         )
     }
 
@@ -105,7 +107,7 @@ class DebounceActivity : BaseActivity() {
                 binding.lastUpdateTime.text =
                     "lastUpdateTime: ${LocalDateTime.now().toString(DateTimeFormat.fullTime())}"
                 binding.recyclerView.adapter = CryptoCurrencyAdapter(uiState.cryptoCurrencyList)
-                binding.progressBar.setVisible()
+                binding.progressBar.setGone()
             }
         }
     }
