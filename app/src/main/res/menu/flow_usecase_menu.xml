@@ -3,6 +3,11 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/refresh_prices"
+        android:icon="@drawable/ic_refresh_24"
+        android:title="Refresh prices"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/show_prices_in_euro"
         android:icon="@drawable/ic_euro_24"
         android:title="Show prices in euro"

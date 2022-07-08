@@ -11,6 +11,7 @@
         <entry key="app/src/main/res/layout/recyclerview_item_crypto_currency.xml" value="0.67" />
         <entry key="app/src/main/res/layout/recyclerview_item_stock.xml" value="0.34427083333333336" />
         <entry key="app/src/main/res/layout/toolbar.xml" value="0.5260416666666666" />
+        <entry key="app/src/main/res/menu/flow_usecase_menu.xml" value="0.5260416666666666" />
         <entry key="app/src/main/res/menu/menu.xml" value="0.5260416666666666" />
       </map>
     </option>

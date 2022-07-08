@@ -142,6 +142,7 @@ class DebounceActivity : BaseActivity() {
 
         when (item.itemId) {
             R.id.show_prices_in_euro -> viewModel.changeCurrency()
+            R.id.refresh_prices -> viewModel.refreshPrices()
         }
 
         return super.onOptionsItemSelected(item)

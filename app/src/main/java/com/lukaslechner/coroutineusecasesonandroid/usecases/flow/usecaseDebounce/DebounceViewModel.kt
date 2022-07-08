@@ -25,6 +25,8 @@ class DebounceViewModel(
 
     val selectedCurrency = MutableStateFlow(Currency.DOLLAR)
 
+    private val userTriggeredRefreshFlow = MutableStateFlow(Unit)
+
     private fun intervalFlow(interval: Long) = flow {
         while (currentCoroutineContext().isActive) {
             delay(interval)
@@ -34,13 +36,15 @@ class DebounceViewModel(
 
     init {
         intervalFlow(3000)
+            .combine(userTriggeredRefreshFlow) { _,_ -> Unit}
             .combine(networkStatusProvider.networkStatus) { _, networkStatus -> networkStatus }
             .filter { networkStatus -> networkStatus is NetworkStatusProvider.NetworkStatus.Available } // only on available internet connection
-            .buffer()
+            .buffer(0)
             .onEach {
                 Timber.d("fetching current crypto currency prices")
                 val cryptoCurrencyPrices = mockApi.getCurrentCryptoCurrencyPrices()
                 cryptoCurrencyDatabase.insert(cryptoCurrencyPrices.mapToEntityList())
+                Timber.d("Fetching crypto prices finished")
             }
             .launchIn(viewModelScope)
     }
@@ -184,6 +188,11 @@ class DebounceViewModel(
             emit(Unit)
             delay(interval)
         }
+    }
+
+    fun refreshPrices() {
+        Timber.d("User triggers price refresh")
+        userTriggeredRefreshFlow.value = Unit
     }
 
     sealed class SearchTerm {
