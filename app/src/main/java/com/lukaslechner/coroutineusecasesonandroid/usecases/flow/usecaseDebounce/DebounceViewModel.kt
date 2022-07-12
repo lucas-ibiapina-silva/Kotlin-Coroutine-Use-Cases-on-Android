@@ -6,11 +6,9 @@ import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.*
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce.database.CryptoCurrencyDao
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce.database.mapToEntityList
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce.database.mapToUiModelList
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.isActive
 import org.joda.time.LocalDateTime
 import org.joda.time.format.DateTimeFormat
 import timber.log.Timber
@@ -25,21 +23,28 @@ class DebounceViewModel(
 
     val selectedCurrency = MutableStateFlow(Currency.DOLLAR)
 
-    private val userTriggeredRefreshFlow = MutableStateFlow(Unit)
+    private val userTriggeredSharedFlow = MutableSharedFlow<Unit>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     private fun intervalFlow(interval: Long) = flow {
+        emit(Unit)
         while (currentCoroutineContext().isActive) {
             delay(interval)
             emit(Unit)
         }
     }
 
+    private val intervalOnNetworkFlow = combine(
+        intervalFlow(30_000),
+        networkStatusProvider.networkStatus
+    ) { _,
+        networkStatus ->
+        networkStatus
+    }.filter { networkStatus -> networkStatus is NetworkStatusProvider.NetworkStatus.Available } // only on available internet connection
+        .onEach { Timber.d("Triggered by interval") }
+
     init {
-        intervalFlow(3000)
-            .combine(userTriggeredRefreshFlow) { _,_ -> Unit}
-            .combine(networkStatusProvider.networkStatus) { _, networkStatus -> networkStatus }
-            .filter { networkStatus -> networkStatus is NetworkStatusProvider.NetworkStatus.Available } // only on available internet connection
-            .buffer(0)
+        merge(intervalOnNetworkFlow, userTriggeredSharedFlow)
+            .conflate()
             .onEach {
                 Timber.d("fetching current crypto currency prices")
                 val cryptoCurrencyPrices = mockApi.getCurrentCryptoCurrencyPrices()
@@ -62,8 +67,11 @@ class DebounceViewModel(
         .distinctUntilChanged()
 
     private val cryptoFlow =
-        cryptoCurrencyDatabase.latestCryptoCurrencyPrices().map { it.mapToUiModelList() }
-            .flowOn(defaultDispatcher)
+        cryptoCurrencyDatabase
+            .latestCryptoCurrencyPrices()
+            .map {
+                it.mapToUiModelList()
+            }.flowOn(defaultDispatcher)
 
     private val cryptoFlowEuro: Flow<List<CryptoCurrency>> = combine(
         cryptoFlow,
@@ -137,6 +145,7 @@ class DebounceViewModel(
         Timber.d("Market Cap calculation took ${endCalculation - startCalculation}ms")
         result
     }.runningReduce { lastCryptoCurrencyList, currentCryptoCurrencyList ->
+        Timber.d("Log in RunningReduce")
         currentCryptoCurrencyList.map { currentCrypto ->
             val lastPrice =
                 lastCryptoCurrencyList.find { it.name == currentCrypto.name }?.currentPrice
@@ -157,20 +166,28 @@ class DebounceViewModel(
         Pair(cryptoCurrencyList, totalMarketCap)
     }.flowOn(defaultDispatcher)
 
-    val uiState = MutableStateFlow<UiState>(UiState.Initial)
-
-    init {
-        searchTermFlow
-            .filterNot { it is SearchTerm.TooShort }
-            .combine(selectedCurrency) { searchTerm, selectedCurrency ->
-                uiState.value = UiState.Loading
-            }.flatMapLatest {
-                filteredResult
-            }.onEach {
-                uiState.value = UiState.Success(it.first, it.second)
-            }.launchIn(viewModelScope)
-
-    }
+    val uiState: StateFlow<UiState> = searchTermFlow
+        .filterNot { it is SearchTerm.TooShort }
+        .combine(selectedCurrency) { _, _ ->
+            // TODO: Loading indicator not working
+            // Is it possible to directly emit the loading state here
+            // instead of uiState.value = UiState.Loading?
+            // emit(UiState.Loading)
+            Unit
+        }
+        .flatMapLatest {
+            filteredResult
+        }
+        .map {
+            UiState.Success(it.first, it.second) as UiState
+        }.onStart {
+            emit(UiState.Loading)
+        }
+        .stateIn(
+            initialValue = UiState.Initial,
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000)
+        )
 
     val currentTime: StateFlow<String> = ticker()
         .conflate()
@@ -192,7 +209,9 @@ class DebounceViewModel(
 
     fun refreshPrices() {
         Timber.d("User triggers price refresh")
-        userTriggeredRefreshFlow.value = Unit
+        viewModelScope.launch {
+            userTriggeredSharedFlow.emit(Unit)
+        }
     }
 
     sealed class SearchTerm {
