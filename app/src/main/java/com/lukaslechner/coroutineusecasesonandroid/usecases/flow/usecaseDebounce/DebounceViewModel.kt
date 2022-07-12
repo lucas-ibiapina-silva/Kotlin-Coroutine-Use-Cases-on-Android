@@ -50,6 +50,8 @@ class DebounceViewModel(
                 val cryptoCurrencyPrices = mockApi.getCurrentCryptoCurrencyPrices()
                 cryptoCurrencyDatabase.insert(cryptoCurrencyPrices.mapToEntityList())
                 Timber.d("Fetching crypto prices finished")
+            }.catch { exception ->
+                Timber.d("Exception thrown: $exception")
             }
             .launchIn(viewModelScope)
     }
