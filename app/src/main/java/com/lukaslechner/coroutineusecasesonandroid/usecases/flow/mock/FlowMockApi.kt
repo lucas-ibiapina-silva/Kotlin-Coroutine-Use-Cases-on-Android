@@ -5,15 +5,11 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
-import retrofit2.http.Query
 
 interface FlowMockApi {
 
-    @GET("current-alphabet-stock-price")
-    suspend fun getCurrentAlphabetStockPrice(): Stock
-
     @GET("current-stock-prices")
-    suspend fun getAllCurrentStockPrices(@Query("searchTerm") searchTerm: String): List<StockListing>
+    suspend fun getCurrentStockPrices(): List<Stock>
 
     @GET("current-crypto-currency-prices")
     suspend fun getCurrentCryptoCurrencyPrices(): List<CryptoCurrency>

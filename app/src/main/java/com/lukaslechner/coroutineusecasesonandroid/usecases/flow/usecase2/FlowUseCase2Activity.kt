@@ -11,7 +11,6 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.lukaslechner.coroutineusecasesonandroid.base.BaseActivity
 import com.lukaslechner.coroutineusecasesonandroid.base.flowUseCase2Description
 import com.lukaslechner.coroutineusecasesonandroid.databinding.ActivityFlowUsecase1Binding
-import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.helper.initChart
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.helper.style
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.Stock
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase2.database.StockDatabase
@@ -34,7 +33,7 @@ class FlowUseCase2Activity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        binding.chart.initChart(this)
+        // binding.chart.initChart(this)
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -49,11 +48,11 @@ class FlowUseCase2Activity : BaseActivity() {
         when (uiState) {
             is UiState.Loading -> {
                 binding.progressBar.setVisible()
-                binding.chart.setGone()
+                // binding.chart.setGone()
             }
             is UiState.Success -> {
                 binding.progressBar.setGone()
-                binding.chart.setVisible()
+                // binding.chart.setVisible()
                 updateChart(uiState.stockList)
             }
         }
@@ -63,9 +62,9 @@ class FlowUseCase2Activity : BaseActivity() {
 
         val entries: ArrayList<Entry> = ArrayList()
         stockList.forEachIndexed { index, stock ->
-            entries.add(
-                Entry((index + 1).toFloat(), stock.currentPriceUsd)
-            )
+            //entries.add(
+                // Entry((index + 1).toFloat(), stock.currentPriceUsd)
+            //)
         }
 
         val data = LineDataSet(entries, "Alphabet Stock Price").apply {
@@ -73,8 +72,8 @@ class FlowUseCase2Activity : BaseActivity() {
         }
 
         val lineData = LineData(data)
-        binding.chart.data = lineData
-        binding.chart.invalidate()
+        // binding.chart.data = lineData
+        // binding.chart.invalidate()
     }
 
     override fun getToolbarTitle() = flowUseCase2Description

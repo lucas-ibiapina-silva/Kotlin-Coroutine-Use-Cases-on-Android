@@ -6,17 +6,31 @@ import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.Stock
 
 @Entity(tableName = "stock")
 data class StockEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val time: Long,
-    val priceUsd: Float
+    val rank: Int,
+    val name: String,
+    @PrimaryKey val symbol: String,
+    val marketCap: Float,
+    val currentPriceUsd: Float,
+    val country: String,
 )
 
 fun List<StockEntity>.mapToUiModelList() = map {
-    Stock(currentPriceUsd = it.priceUsd)
+    Stock(
+        rank = it.rank,
+        name = it.name,
+        symbol = it.symbol,
+        marketCap = it.marketCap,
+        currentPrice = it.currentPriceUsd,
+        country = it.country
+    )
 }
 
 fun Stock.mapToEntity() =
     StockEntity(
-        time = System.currentTimeMillis(),
-        priceUsd = currentPriceUsd
+        rank = this.rank,
+        name = this.name,
+        symbol = this.symbol,
+        marketCap = this.marketCap,
+        currentPriceUsd = this.currentPrice,
+        country = this.country
     )

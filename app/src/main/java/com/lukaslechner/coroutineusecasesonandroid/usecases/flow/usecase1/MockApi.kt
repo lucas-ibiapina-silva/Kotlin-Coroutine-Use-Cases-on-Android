@@ -1,17 +1,18 @@
 package com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase1
 
+import android.content.Context
 import com.google.gson.Gson
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.createFlowMockApi
-import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.fakeCurrentAlphabetStockPrice
+import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.fakeCurrentStockPrices
 import com.lukaslechner.coroutineusecasesonandroid.utils.MockNetworkInterceptor
 
-fun mockApi() =
+fun mockApi(context: Context) =
     createFlowMockApi(
         MockNetworkInterceptor()
             .mock(
-                path = "http://localhost/current-alphabet-stock-price",
-                body = { Gson().toJson(fakeCurrentAlphabetStockPrice()) },
+                path = "/current-stock-prices",
+                body = { Gson().toJson(fakeCurrentStockPrices(context)) },
                 status = 200,
-                delayInMs = 2000,
+                delayInMs = 1500,
             )
     )

@@ -15,7 +15,7 @@ import com.lukaslechner.coroutineusecasesonandroid.CoroutineUsecasesOnAndroidApp
 import com.lukaslechner.coroutineusecasesonandroid.R
 import com.lukaslechner.coroutineusecasesonandroid.base.BaseActivity
 import com.lukaslechner.coroutineusecasesonandroid.base.flowUseCase3Description
-import com.lukaslechner.coroutineusecasesonandroid.databinding.ActivityFlowDebounceBinding
+import com.lukaslechner.coroutineusecasesonandroid.databinding.ActivityFlowAllFeaturesBinding
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecaseDebounce.database.CryptoCurrencyDatabase
 import com.lukaslechner.coroutineusecasesonandroid.utils.setGone
 import com.lukaslechner.coroutineusecasesonandroid.utils.setVisible
@@ -28,7 +28,7 @@ import org.joda.time.format.DateTimeFormat
 
 class DebounceActivity : BaseActivity() {
 
-    private val binding by lazy { ActivityFlowDebounceBinding.inflate(layoutInflater) }
+    private val binding by lazy { ActivityFlowAllFeaturesBinding.inflate(layoutInflater) }
 
     private val viewModel: DebounceViewModel by viewModels {
         ViewModelFactory(

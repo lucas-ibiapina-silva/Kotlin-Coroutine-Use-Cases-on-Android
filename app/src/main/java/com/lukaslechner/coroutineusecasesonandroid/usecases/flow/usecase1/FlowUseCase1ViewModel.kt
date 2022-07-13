@@ -3,22 +3,31 @@ package com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase1
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onStart
+import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.FlowMockApi
+import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.Stock
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
 import timber.log.Timber
 
 class FlowUseCase1ViewModel(
-    dataSource: StockPriceDataSource = NetworkStockPriceDataSource()
+    private val mockApi: FlowMockApi
 ) : ViewModel() {
 
     //TODO: Problem: chart data lost on configuration change
 
-    val currentStockPriceAsLiveData: LiveData<UiState> = dataSource.latestPrice
+    val latestPrice: Flow<List<Stock>> = flow {
+        while (true) {
+            val currentStockPrice = mockApi.getCurrentStockPrices()
+            emit(currentStockPrice)
+            delay(3_000)
+        }
+    }
+
+    val currentStockPriceAsLiveData: LiveData<UiState> = latestPrice
         .map { stock ->
             UiState.Success(stock) as UiState
         }.onEach {
-            Timber.d("New value collected")
+            Timber.d("Reaching onEach{}")
         }.onStart {
             emit(UiState.Loading)
         }.asLiveData()

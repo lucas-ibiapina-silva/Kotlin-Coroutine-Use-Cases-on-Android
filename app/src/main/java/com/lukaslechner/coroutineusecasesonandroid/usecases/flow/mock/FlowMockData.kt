@@ -1,13 +1,63 @@
 package com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock
 
+import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
-import okhttp3.Request
+import com.opencsv.CSVReader
+import java.io.InputStreamReader
 import kotlin.random.Random
 
-data class Stock(val companyName: String = "alphabet", val currentPriceUsd: Float)
-data class StockListing(val name: String, val symbol: String)
+data class Stock(
+    val rank: Int,
+    val name: String,
+    val symbol: String,
+    val marketCap: Float,
+    val country: String,
+    val currentPrice: Float,
+    val currency: Currency = Currency.DOLLAR,
+    val priceTrend: PriceTrend = PriceTrend.UNKNOWN
+)
+
+var initialStockData: List<Stock>? = null
+
+fun maybeLoadStockData(context: Context) {
+    if (initialStockData == null) {
+        val stream = context.assets.open("stockdata.csv")
+        val csvReader = CSVReader(InputStreamReader(stream))
+        val stockData = csvReader
+            .readAll()
+            .drop(1)
+            .mapNotNull { line ->
+                val rank = line[0].toInt()
+                val name = line[1]
+                val symbol = line[2]
+                val marketCap = line[3].toFloat()
+                val priceUsd = line[4].toFloat()
+                val country = line[5]
+                Stock(rank, name, symbol, marketCap, country, priceUsd)
+            }.also {
+                csvReader.close()
+            }
+        initialStockData = stockData
+    }
+}
+
+fun fakeCurrentStockPrices(context: Context): List<Stock> {
+    maybeLoadStockData(context)
+
+    return initialStockData!!.map { stock ->
+        val currentPrice = stock.currentPrice
+        if (stock.currentPrice == 0f) {
+            return@map stock
+        }
+        val randomRangeInPercent = 0.03
+        val randomLowerBound = (currentPrice * (1 - randomRangeInPercent))
+        val randomUpperBound = (currentPrice * (1 + randomRangeInPercent))
+        val randomPrice = Random.nextDouble(randomLowerBound, randomUpperBound).toFloat()
+        stock.copy(currentPrice = randomPrice)
+    }
+}
 
 data class CryptoCurrencyDTO(
     val name: String,
@@ -48,24 +98,12 @@ fun CryptoCurrencyDTO.toCryptoCurrency(): CryptoCurrency = CryptoCurrency(
 
 data class CurrencyRate(val usdInEuro: Float)
 
-var currentStockPriceUsd = 2_000f
-fun fakeCurrentAlphabetStockPrice(): Stock {
-    val randomIncreaseOrDecrease = Random.nextInt(-5, 5)
-    currentStockPriceUsd += randomIncreaseOrDecrease
-    return Stock(currentPriceUsd = currentStockPriceUsd)
-}
 
 var currentCurrencyRate = 1.00f
 fun fakeCurrentCurrencyRate(): CurrencyRate {
     val randomIncreaseOrDecrease = Random.nextDouble(-0.01, 0.01).toFloat()
     currentCurrencyRate += randomIncreaseOrDecrease
     return CurrencyRate(currentCurrencyRate)
-}
-
-val allParsedStocks: List<StockListing> by lazy {
-    val gson = Gson()
-    val stockType = object : TypeToken<List<StockListing>>() {}.type
-    return@lazy gson.fromJson<List<StockListing>?>(allStocks, stockType)
 }
 
 val allParsedCryptoCurrencies: List<CryptoCurrency> by lazy {
@@ -86,12 +124,4 @@ val allCryptoCurrenciesWithRandomPrice: List<CryptoCurrency>
             it.copy(currentPrice = randomPrice)
         }
     }
-
-fun filterStocks(request: Request): List<StockListing> {
-    val searchTerm = request.url().queryParameter("searchTerm") ?: return emptyList()
-    if (searchTerm.length < 3) {
-        return emptyList()
-    }
-    return allParsedStocks.filter { it.name.contains(searchTerm, true) }
-}
 

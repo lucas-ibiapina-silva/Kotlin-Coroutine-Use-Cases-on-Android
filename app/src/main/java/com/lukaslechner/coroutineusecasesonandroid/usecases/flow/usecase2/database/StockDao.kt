@@ -12,7 +12,7 @@ interface StockDao {
     @Query("SELECT * FROM stock")
     suspend fun currentAlphabetStockPrices(): List<StockEntity>
 
-    @Query("SELECT * FROM stock ORDER BY time")
+    @Query("SELECT * FROM stock")
     fun stockPrices(): Flow<List<StockEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

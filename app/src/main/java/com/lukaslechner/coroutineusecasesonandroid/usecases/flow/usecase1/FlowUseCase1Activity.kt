@@ -2,26 +2,27 @@ package com.lukaslechner.coroutineusecasesonandroid.usecases.flow.usecase1
 
 import android.os.Bundle
 import androidx.activity.viewModels
-import com.github.mikephil.charting.data.Entry
 import com.lukaslechner.coroutineusecasesonandroid.base.BaseActivity
 import com.lukaslechner.coroutineusecasesonandroid.base.flowUseCase1Description
 import com.lukaslechner.coroutineusecasesonandroid.databinding.ActivityFlowUsecase1Binding
-import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.helper.initChart
-import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.Stock
 import com.lukaslechner.coroutineusecasesonandroid.utils.setGone
 import com.lukaslechner.coroutineusecasesonandroid.utils.setVisible
+import org.joda.time.LocalDateTime
+import org.joda.time.format.DateTimeFormat
 
 class FlowUseCase1Activity : BaseActivity() {
 
     private val binding by lazy { ActivityFlowUsecase1Binding.inflate(layoutInflater) }
+    private val adapter = StockAdapter()
 
-    private val viewModel: FlowUseCase1ViewModel by viewModels()
+    private val viewModel: FlowUseCase1ViewModel by viewModels {
+        ViewModelFactory(mockApi(applicationContext))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-
-        binding.chart.initChart(this)
+        binding.recyclerView.adapter = adapter
 
         viewModel.currentStockPriceAsLiveData.observe(this) { uiState ->
             if (uiState != null) {
@@ -34,26 +35,15 @@ class FlowUseCase1Activity : BaseActivity() {
         when (uiState) {
             is UiState.Loading -> {
                 binding.progressBar.setVisible()
-                binding.chart.setGone()
+                binding.recyclerView.setGone()
             }
             is UiState.Success -> {
-                binding.progressBar.setGone()
-                binding.chart.setVisible()
-                updateChart(uiState.stock)
+                    binding.recyclerView.setVisible()
+                    binding.lastUpdateTime.text = "lastUpdateTime: ${LocalDateTime.now().toString(DateTimeFormat.fullTime())}"
+                    adapter.stockList = uiState.stockList
+                    binding.progressBar.setGone()
             }
         }
-    }
-
-    private fun updateChart(stock: Stock) {
-        val currentLineData = binding.chart.data
-        currentLineData.addEntry(
-            Entry(
-                currentLineData.entryCount.toFloat(),
-                stock.currentPriceUsd
-            ), 0
-        )
-        binding.chart.data = currentLineData
-        binding.chart.invalidate()
     }
 
     override fun getToolbarTitle() = flowUseCase1Description

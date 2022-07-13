@@ -5,11 +5,9 @@ import androidx.activity.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.github.mikephil.charting.data.Entry
 import com.lukaslechner.coroutineusecasesonandroid.base.BaseActivity
 import com.lukaslechner.coroutineusecasesonandroid.base.flowUseCase4Description
 import com.lukaslechner.coroutineusecasesonandroid.databinding.ActivityFlowUsecase1Binding
-import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.helper.initChart
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.Stock
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.useCaseViewModelWithChannels.ViewModelWithChannels.NetworkState
 import com.lukaslechner.coroutineusecasesonandroid.utils.setGone
@@ -32,7 +30,7 @@ class FlowUseCase4ActivityChannels : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        binding.chart.initChart(this)
+        //binding.chart.initChart(this)
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -63,18 +61,18 @@ class FlowUseCase4ActivityChannels : BaseActivity() {
         when (uiState) {
             is UiState.Loading -> {
                 binding.progressBar.setVisible()
-                binding.chart.setGone()
+                //binding.chart.setGone()
             }
             is UiState.Success -> {
                 binding.progressBar.setGone()
-                binding.chart.setVisible()
+                //binding.chart.setVisible()
                 updateChart(uiState.stock)
             }
         }
     }
 
     private fun updateChart(stock: Stock) {
-        val currentLineData = binding.chart.data
+        /*val currentLineData = binding.chart.data
         currentLineData.addEntry(
             Entry(
                 currentLineData.entryCount.toFloat(),
@@ -82,7 +80,7 @@ class FlowUseCase4ActivityChannels : BaseActivity() {
             ), 0
         )
         binding.chart.data = currentLineData
-        binding.chart.invalidate()
+        binding.chart.invalidate()*/
     }
 
     override fun getToolbarTitle() = flowUseCase4Description

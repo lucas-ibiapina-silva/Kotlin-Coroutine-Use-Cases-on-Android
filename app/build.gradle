@@ -97,6 +97,8 @@ dependencies {
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     implementation "joda-time:joda-time:2.10.13"
 
+    implementation 'com.opencsv:opencsv:5.5.2'
+
     testImplementation project(path: ':app')
 
     testImplementation 'junit:junit:4.13.2'

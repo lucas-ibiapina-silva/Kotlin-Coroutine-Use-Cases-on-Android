@@ -5,7 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.lukaslechner.coroutineusecasesonandroid.R
-import com.lukaslechner.coroutineusecasesonandroid.databinding.RecyclerviewItemCryptoCurrencyBinding
+import com.lukaslechner.coroutineusecasesonandroid.databinding.RecyclerviewItemCryptoBinding
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.CryptoCurrency
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.Currency
 import com.lukaslechner.coroutineusecasesonandroid.usecases.flow.mock.PriceTrend
@@ -14,11 +14,11 @@ import com.lukaslechner.coroutineusecasesonandroid.utils.setInvisible
 class CryptoCurrencyAdapter(private val cryptoCurrencyList: List<CryptoCurrency>): RecyclerView.Adapter<CryptoCurrencyAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val binding = RecyclerviewItemCryptoCurrencyBinding.bind(view)
+        val binding = RecyclerviewItemCryptoBinding.bind(view)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.recyclerview_item_crypto_currency, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.recyclerview_item_crypto, parent, false)
         return ViewHolder(view)
     }
 
@@ -26,7 +26,7 @@ class CryptoCurrencyAdapter(private val cryptoCurrencyList: List<CryptoCurrency>
         val cryptoCurrency = cryptoCurrencyList[position]
         index.text = cryptoCurrencyList.indexOf(cryptoCurrency).toString()
         name.text = cryptoCurrency.name
-        marketCap.text = cryptoCurrency.marketCap.toString()
+        // marketCap.text = cryptoCurrency.marketCap.toString()
         val currencySymbol = when (cryptoCurrency.currency) {
             Currency.DOLLAR -> "$"
             Currency.EURO -> "€"

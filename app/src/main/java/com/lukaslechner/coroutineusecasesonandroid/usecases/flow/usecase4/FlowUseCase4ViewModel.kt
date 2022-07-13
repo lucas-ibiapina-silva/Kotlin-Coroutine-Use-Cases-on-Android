@@ -14,7 +14,7 @@ class FlowUseCase4ViewModel(
 
     private val currentStockPriceInEuroCombined: Flow<Float> =
         stockPriceDataSource.latestPrice.combine(currencyRateDataSource.latestRate) { stock, currencyRate ->
-            stock.currentPriceUsd * currencyRate.usdInEuro
+            stock.currentPrice * currencyRate.usdInEuro
         }
 
     val combinedStateFlow = currentStockPriceInEuroCombined
@@ -30,7 +30,7 @@ class FlowUseCase4ViewModel(
 
     private val currentStockPriceInEuroZipped: Flow<Float> =
         stockPriceDataSource.latestPrice.zip(currencyRateDataSource.latestRate) { stock, currencyRate ->
-            stock.currentPriceUsd * currencyRate.usdInEuro
+            stock.currentPrice * currencyRate.usdInEuro
         }
 
     val zippedStateFlow = currentStockPriceInEuroCombined
@@ -51,7 +51,7 @@ class FlowUseCase4ViewModel(
             // simulate heavy calculation
             delay(2000)
 
-            val stockPriceInEuro = stock.currentPriceUsd * currencyRate.usdInEuro
+            val stockPriceInEuro = stock.currentPrice * currencyRate.usdInEuro
             emit(UiState.Success(stockPriceInEuro))
         }.stateIn(
             initialValue = UiState.Loading,
