@@ -22,13 +22,17 @@ class FlowUseCase4Activity : BaseActivity() {
     private val binding by lazy { ActivityFlowUsecase1Binding.inflate(layoutInflater) }
     private val adapter = StockAdapter()
 
-    private val viewModel: FlowUseCase4ViewModel by viewModels {
-        ViewModelFactory(
-            StockPriceRepository(
-                remoteDataSource = NetworkStockPriceDataSource(mockApi(applicationContext)),
-                localDataSource = StockDatabase.getInstance(applicationContext).stockDao()
-            )
+    private val stockPriceRepository by lazy {
+        StockPriceRepositoryWithMutableSharedFlow(
+            remoteDataSource = NetworkStockPriceDataSource(mockApi(applicationContext)),
+            localDataSource = StockDatabase.getInstance(applicationContext).stockDao()
         )
+    }
+
+    private val teslaStockPriceLogger by lazy { TeslaStockPriceLogger(stockPriceRepository) }
+
+    private val viewModel: FlowUseCase4ViewModel by viewModels {
+        ViewModelFactory(stockPriceRepository)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +44,7 @@ class FlowUseCase4Activity : BaseActivity() {
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.currentStockPriceAsSharedFlow.collect { uiState ->
+                viewModel.currentStockPriceAsStateFlow.collect { uiState ->
                     render(uiState)
                 }
             }
@@ -69,8 +73,15 @@ class FlowUseCase4Activity : BaseActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        Timber.d("onResume()")
+        teslaStockPriceLogger.startLogging()
+    }
+
     override fun onStop() {
         Timber.d("onStop()")
+        teslaStockPriceLogger.stopLogging()
         super.onStop()
     }
 

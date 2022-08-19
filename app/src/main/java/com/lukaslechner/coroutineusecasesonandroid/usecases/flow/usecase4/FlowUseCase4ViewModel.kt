@@ -6,12 +6,12 @@ import kotlinx.coroutines.flow.*
 import timber.log.Timber
 
 class FlowUseCase4ViewModel(
-    stockPriceRepository: StockPriceRepository
+    stockPriceRepository: StockPriceRepositoryWithMutableSharedFlow
 ) : BaseViewModel<UiState>() {
 
-    val currentStockPriceAsSharedFlow: Flow<UiState> =
-        stockPriceDataSource
-            .latestPrice
+    val currentStockPriceAsStateFlow: Flow<UiState> =
+        stockPriceRepository
+            .mutableSharedFlow
             .map { stockList ->
                 UiState.Success(stockList) as UiState
             }
