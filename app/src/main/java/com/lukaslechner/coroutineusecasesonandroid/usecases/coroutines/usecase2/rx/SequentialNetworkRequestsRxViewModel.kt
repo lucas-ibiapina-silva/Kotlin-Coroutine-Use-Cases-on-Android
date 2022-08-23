@@ -30,7 +30,8 @@ class SequentialNetworkRequestsRxViewModel(
                     uiState.value = UiState.Success(featureVersions)
                 },
                 onError = {
-                    uiState.value = UiState.Error("Network request failed!")
+                    uiState.value =
+                        UiState.Error("Network request failed!")
                 }
             )
             .addTo(disposables)
