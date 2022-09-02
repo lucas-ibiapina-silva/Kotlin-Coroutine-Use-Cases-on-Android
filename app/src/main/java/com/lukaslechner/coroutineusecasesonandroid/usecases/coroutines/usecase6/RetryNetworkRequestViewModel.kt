@@ -5,6 +5,7 @@ import com.lukaslechner.coroutineusecasesonandroid.base.BaseViewModel
 import com.lukaslechner.coroutineusecasesonandroid.mock.MockApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import timber.log.Timber
 
 class RetryNetworkRequestViewModel(
@@ -28,6 +29,11 @@ class RetryNetworkRequestViewModel(
         }
     }
 
+    private suspend fun loadRecentAndroidVersions() {
+        val recentAndroidVersions = api.getRecentAndroidVersions()
+        uiState.value = UiState.Success(recentAndroidVersions)
+    }
+
     private suspend fun <T> retry(
         numberOfRetries: Int,
         initialDelayMillis: Long = 100,
@@ -47,10 +53,4 @@ class RetryNetworkRequestViewModel(
         }
         return block()
     }
-
-    private suspend fun loadRecentAndroidVersions() {
-        val recentAndroidVersions = api.getRecentAndroidVersions()
-        uiState.value = UiState.Success(recentAndroidVersions)
-    }
-
 }
