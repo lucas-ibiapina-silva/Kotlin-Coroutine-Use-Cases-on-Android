@@ -2,7 +2,10 @@ package com.lukaslechner.coroutineusecasesonandroid.usecases.coroutines.usecase1
 
 import androidx.lifecycle.viewModelScope
 import com.lukaslechner.coroutineusecasesonandroid.base.BaseViewModel
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.math.BigInteger
 import kotlin.system.measureTimeMillis
 
@@ -17,17 +20,19 @@ class CalculationInBackgroundViewModel : BaseViewModel<UiState>() {
             }
             var resultString = ""
             val stringConversionDuration = measureTimeMillis {
-                resultString = result.toString()
+                resultString = withContext(Dispatchers.Default + CoroutineName("String Conversion Coroutine")) {
+                    result.toString()
+                }
             }
             uiState.value = UiState.Success(resultString, computationDuration, stringConversionDuration)
         }
     }
 
-    private fun calculateFactorialOf(number: Int) : BigInteger {
+    private suspend fun calculateFactorialOf(number: Int) = withContext(context = Dispatchers.Default) {
         var factorial = BigInteger.ONE
         for (i in 1..number) {
             factorial = factorial.multiply(BigInteger.valueOf(i.toLong()))
         }
-        return  factorial
+        factorial
     }
 }
