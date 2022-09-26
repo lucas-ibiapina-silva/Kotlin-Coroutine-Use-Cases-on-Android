@@ -2,6 +2,7 @@ package com.lukaslechner.coroutineusecasesonandroid.usecases.coroutines.usecase1
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.lukaslechner.coroutineusecasesonandroid.mock.mockAndroidVersions
+import com.lukaslechner.coroutineusecasesonandroid.usecases.utils.MainCoroutineScopeRule
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -14,16 +15,21 @@ class PerformSingleNetworkRequestViewModelTest {
 
     private val dispatcher = TestCoroutineDispatcher()
 
-    @org.junit.Before
-    fun setUp() {
-        Dispatchers.setMain(dispatcher)
-    }
+    //normal way to execute before and after and the best way when we create our own rule
+//    @org.junit.Before
+//    fun setUp() {
+//        Dispatchers.setMain(dispatcher)
+//    }
+//
+//    @org.junit.After
+//    fun tearDown() {
+//        Dispatchers.resetMain()
+//        dispatcher.cleanupTestCoroutines()
+//    }
 
-    @org.junit.After
-    fun tearDown() {
-        Dispatchers.resetMain()
-        dispatcher.cleanupTestCoroutines()
-    }
+    //Own rule
+    @get:Rule
+    val mainCoroutineScopeRule = MainCoroutineScopeRule()
 
     @get:Rule
     val testInstantTaskExecutorRule: TestRule = InstantTaskExecutorRule()
@@ -53,7 +59,7 @@ class PerformSingleNetworkRequestViewModelTest {
     }
 
     @org.junit.Test
-    fun `should return Error when network request fails`() {
+    fun `Should return Error when network request fails`() {
         // Arrange
         val fakeApi = FakeErrorApi()
         val viewModel = PerformSingleNetworkRequestViewModel(fakeApi)
